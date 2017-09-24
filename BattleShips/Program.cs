@@ -12,8 +12,6 @@ namespace BattleShips
         {
             FieldGeneration myField = new FieldGeneration();
             FieldGeneration enemyField = new FieldGeneration();
-            //enemyField.getField();
-            //myField.getField();
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
@@ -27,8 +25,6 @@ namespace BattleShips
                 }
                 Console.WriteLine();
             }
-            //myField.Deploying(9, 0, 0);
-            //myField.Deploying(9, 0, 0);
             Console.ReadKey();
         }
     }
