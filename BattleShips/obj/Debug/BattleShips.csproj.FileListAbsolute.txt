@@ -1,0 +1,7 @@
+D:\VSJ\BattleShips\BattleShips\bin\Debug\BattleShips.exe.config
+D:\VSJ\BattleShips\BattleShips\bin\Debug\BattleShips.exe
+D:\VSJ\BattleShips\BattleShips\bin\Debug\BattleShips.pdb
+D:\VSJ\BattleShips\BattleShips\obj\Debug\BattleShips.csproj.CoreCompileInputs.cache
+D:\VSJ\BattleShips\BattleShips\obj\Debug\BattleShips.exe
+D:\VSJ\BattleShips\BattleShips\obj\Debug\BattleShips.pdb
+D:\VSJ\BattleShips\BattleShips\obj\Debug\BattleShips.csprojResolveAssemblyReference.cache
