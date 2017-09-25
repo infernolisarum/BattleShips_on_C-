@@ -70,7 +70,7 @@ namespace BattleShips
             Random rnd = new Random();
             foreach(Ship_Design ship in ships)
             {
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 15; i++)
                 {
                     int X = rnd.Next(0, 9);
                     int Y = rnd.Next(0, 9);
@@ -102,7 +102,7 @@ namespace BattleShips
                 {
                     locationShip[buf] = x;
                     ++buf;
-                    locationShip[buf] = y + 1;
+                    locationShip[buf] = y + i;
                     Deploying(countDeck, x, y + i);
                 }
                 ship.SetCoordinates(locationShip);
@@ -131,7 +131,7 @@ namespace BattleShips
                 {
                     locationShip[buf] = x;
                     ++buf;
-                    locationShip[buf] = y - 1;
+                    locationShip[buf] = y - i;
                     Deploying(countDeck, x, y - i);
                 }
                 ship.SetCoordinates(locationShip);
