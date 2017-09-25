@@ -19,7 +19,7 @@ namespace BattleShips
                     Console.Write("{0} ", myField.getField()[i, j]);
                 }
                 Console.Write("\t");
-                for(int k = 0; k < 10; k++)
+                for (int k = 0; k < 10; k++)
                 {
                     Console.Write("{0} ", enemyField.getField()[i, k]);
                 }
@@ -66,19 +66,17 @@ namespace BattleShips
             ships[7] = new Ship_Design(1);
             ships[8] = new Ship_Design(1);
             ships[9] = new Ship_Design(1);
-            foreach (Ship_Design ship in ships)
+            for (int j = 0; j < 10; j++)
             {
-                int countDeck = ship.GetValueShip();
-                int iterator = 1;
-                for (int i = 0; i < iterator; i++)
+                int countDeck = ships[j].GetValueShip();
+                for (int i = 0; i < 5; i++)
                 {
                     int X = rnd.Next(0, 9);
                     int Y = rnd.Next(0, 9);
                     if (DirectionRIGHT(countDeck, X, Y) == true) break;
-                    if (DirectionLEFT(countDeck, X, Y) == true) break;
+                    if (DirectionLEFT(countDeck, X, X) == true) break;
                     if (DirectionUP(countDeck, X, Y) == true) break;
                     if (DirectionDOWN(countDeck, X, Y) == true) break;
-                    iterator++;
                 }
             }
         }
@@ -108,7 +106,7 @@ namespace BattleShips
 
         private bool DirectionLEFT(int dirCountDeck, int dirX, int dirY)
         {
-            if (dirY - (dirCountDeck + 1) < 0) return false;
+            if (dirY - (dirCountDeck - 1) < 0) return false;
             int sectionCount = 0;
             for (int i = 0; i < dirCountDeck; i++)
             {
@@ -131,6 +129,29 @@ namespace BattleShips
 
         private bool DirectionUP(int dirCountDeck, int dirX, int dirY)
         {
+            if (dirX - (dirCountDeck - 1) < 0) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < dirCountDeck; i++)
+            {
+                if (CheckArea(dirX - i, dirY) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == dirCountDeck)
+            {
+                for (int i = 0; i < dirCountDeck; i++)
+                {
+                    Deploying(dirCountDeck, dirX - i, dirY);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private bool DirectionDOWN(int dirCountDeck, int dirX, int dirY)
+        {
             if (dirX + (dirCountDeck - 1) > 9) return false;
             int sectionCount = 0;
             for (int i = 0; i < dirCountDeck; i++)
@@ -146,29 +167,6 @@ namespace BattleShips
                 for (int i = 0; i < dirCountDeck; i++)
                 {
                     Deploying(dirCountDeck, dirX + i, dirY);
-                }
-                return true;
-            }
-            return false;
-        }
-
-        private bool DirectionDOWN(int dirCountDeck, int dirX, int dirY)
-        {
-            if (dirX - (dirCountDeck + 1) < 0) return false;
-            int sectionCount = 0;
-            for (int i = 0; i < dirCountDeck; i++)
-            {
-                if (CheckArea(dirX - i, dirY) == 0)
-                {
-                    sectionCount++;
-                }
-            }
-
-            if (sectionCount == dirCountDeck)
-            {
-                for (int i = 0; i < dirCountDeck; i++)
-                {
-                    Deploying(dirCountDeck, dirX - i, dirY);
                 }
                 return true;
             }
