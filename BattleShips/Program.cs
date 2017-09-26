@@ -11,24 +11,25 @@ namespace BattleShips
         static void Main(string[] args)
         {
             FieldGeneration myField = new FieldGeneration();
-            //FieldGeneration enemyField = new FieldGeneration();
+            FieldGeneration enemyField = new FieldGeneration();
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
                     Console.Write("{0} ", myField.getField()[i, j]);
                 }
-                //Console.Write("\t");
-                //for (int k = 0; k < 10; k++)
-                //{
-                //    Console.Write("{0} ", enemyField.getField()[i, k]);
-                //}
+                Console.Write("\t");
+                for (int k = 0; k < 10; k++)
+                {
+                    Console.Write("{0} ", enemyField.getField()[i, k]);
+                }
                 Console.WriteLine();
             }
-            
-            foreach(Ship_Design ship in myField.getShipsOnField())
+
+            Console.WriteLine();
+            foreach (Ship_Design ship in myField.getShipsOnField())
             {
-                foreach(int i in ship.GetCoordinates())
+                foreach (int i in ship.GetCoordinates())
                     Console.Write(i);
                 Console.WriteLine();
             }
@@ -40,7 +41,13 @@ namespace BattleShips
     {
         private int[,] field;
 
-        private void CreateField()
+        public FieldGeneration()
+        {
+            createField();
+            deployingOnField();
+        }
+
+        private void createField()
         {
             field = new int[10, 10];
             for (int i = 0; i < 10; i++)
@@ -54,8 +61,6 @@ namespace BattleShips
 
         public int[,] getField()
         {
-            CreateField();
-            DeployingOnField();
             return field;
         }
 
@@ -64,141 +69,125 @@ namespace BattleShips
             return getAllShips();
         }
 
-        private void DeployingOnField()
+        private void deployingOnField()
         {
             Ship_Design[] ships = getAllShips();
             Random rnd = new Random();
             foreach(Ship_Design ship in ships)
             {
-                for (int i = 0; i < 15; i++)
+                for (int i = 0; i < 30; i++)
                 {
                     int X = rnd.Next(0, 9);
                     int Y = rnd.Next(0, 9);
-                    if (DirectionRIGHT(ship, X, Y) == true) break;
-                    if (DirectionLEFT(ship, X, X) == true) break;
-                    if (DirectionUP(ship, X, Y) == true) break;
-                    if (DirectionDOWN(ship, X, Y) == true) break;
+                    if (directionRIGHT(ship, X, Y) == true) break;
+                    if (directionLEFT(ship, X, X) == true) break;
+                    if (directionUP(ship, X, Y) == true) break;
+                    if (directionDOWN(ship, X, Y) == true) break;
                 }
             }
         }
 
-        private bool DirectionRIGHT(Ship_Design ship, int x, int y)
+        private bool directionRIGHT(Ship_Design ship, int x, int y)
         {
-            int countDeck = ship.GetValueShip();
-            if (y + (countDeck - 1) > 9) return false;
+            if (y + (ship.GetValueShip() - 1) > 9) return false;
             int sectionCount = 0;
-            int[] locationShip = new int[countDeck * 2];
-            for (int i = 0; i < countDeck; i++)
+            for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (CheckArea(x, y + i) == 0)
+                if (checkArea(x, y + i) == 0)
                 {
                     sectionCount++;
                 }
             }
 
-            if (sectionCount == countDeck)
+            if (sectionCount == ship.GetValueShip())
             {
-                for (int i = 0, buf = 0; i < countDeck; i++, buf++)
+                for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    locationShip[buf] = x;
-                    ++buf;
-                    locationShip[buf] = y + i;
-                    Deploying(countDeck, x, y + i);
+                    marking(ship.GetValueShip(), x, y + i);
+                    ship.SetCoordinates(x);
+                    ship.SetCoordinates(y + i);
                 }
-                ship.SetCoordinates(locationShip);
                 return true;
             }
             return false;
         }
 
-        private bool DirectionLEFT(Ship_Design ship, int x, int y)
+        private bool directionLEFT(Ship_Design ship, int x, int y)
         {
-            int countDeck = ship.GetValueShip();
-            if (y - (countDeck - 1) < 0) return false;
+            if (y - (ship.GetValueShip() - 1) < 0) return false;
             int sectionCount = 0;
-            int[] locationShip = new int[countDeck * 2];
-            for (int i = 0; i < countDeck; i++)
+            for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (CheckArea(x, y - i) == 0)
+                if (checkArea(x, y - i) == 0)
                 {
                     sectionCount++;
                 }
             }
 
-            if (sectionCount == countDeck)
+            if (sectionCount == ship.GetValueShip())
             {
-                for (int i = 0, buf = 0; i < countDeck; i++, buf++)
+                for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    locationShip[buf] = x;
-                    ++buf;
-                    locationShip[buf] = y - i;
-                    Deploying(countDeck, x, y - i);
+                    marking(ship.GetValueShip(), x, y - i);
+                    ship.SetCoordinates(x);
+                    ship.SetCoordinates(y - i);
                 }
-                ship.SetCoordinates(locationShip);
                 return true;
             }
             return false;
         }
 
-        private bool DirectionUP(Ship_Design ship, int x, int y)
+        private bool directionUP(Ship_Design ship, int x, int y)
         {
-            int countDeck = ship.GetValueShip();
-            if (x - (countDeck - 1) < 0) return false;
+            if (x - (ship.GetValueShip() - 1) < 0) return false;
             int sectionCount = 0;
-            int[] locationShip = new int[countDeck * 2];
-            for (int i = 0; i < countDeck; i++)
+            for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (CheckArea(x - i, y) == 0)
+                if (checkArea(x - i, y) == 0)
                 {
                     sectionCount++;
                 }
             }
 
-            if (sectionCount == countDeck)
+            if (sectionCount == ship.GetValueShip())
             {
-                for (int i = 0, buf = 0; i < countDeck; i++, buf++)
+                for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    locationShip[buf] = x - i;
-                    ++buf;
-                    locationShip[buf] = y;
-                    Deploying(countDeck, x - i, y);
+                    marking(ship.GetValueShip(), x - i, y);
+                    ship.SetCoordinates(x - i);
+                    ship.SetCoordinates(y);
                 }
-                ship.SetCoordinates(locationShip);
                 return true;
             }
             return false;
         }
 
-        private bool DirectionDOWN(Ship_Design ship, int x, int y)
+        private bool directionDOWN(Ship_Design ship, int x, int y)
         {
-            int countDeck = ship.GetValueShip();
-            if (x + (countDeck - 1) > 9) return false;
+            if (x + (ship.GetValueShip() - 1) > 9) return false;
             int sectionCount = 0;
-            int[] locationShip = new int[countDeck * 2];
-            for (int i = 0; i < countDeck; i++)
+            for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (CheckArea(x + i, y) == 0)
+                if (checkArea(x + i, y) == 0)
                 {
                     sectionCount++;
                 }
             }
 
-            if (sectionCount == countDeck)
+            if (sectionCount == ship.GetValueShip())
             {
-                for (int i = 0, buf = 0; i < countDeck; i++, buf++)
+                for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    locationShip[buf] = x + i;
-                    ++buf;
-                    locationShip[buf] = y;
-                    Deploying(countDeck, x + i, y);
+                    marking(ship.GetValueShip(), x + i, y);
+                    ship.SetCoordinates(x + i);
+                    ship.SetCoordinates(y);
                 }
-                ship.SetCoordinates(locationShip);
                 return true;
             }
             return false;
         }
 
-        private int CheckArea(int x, int y)
+        private int checkArea(int x, int y)
         {
             int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1, x - 1, y, x - 1, y - 1, x, y - 1, x + 1, y - 1 };
             int bufInt = 0;
@@ -207,12 +196,12 @@ namespace BattleShips
                 int bufX = sequenceParam[i];
                 ++i;
                 int bufY = sequenceParam[i];
-                bufInt += InArr(bufX, bufY);
+                bufInt += inArr(bufX, bufY);
             }
             return bufInt;
         }
 
-        private int InArr(int x, int y)
+        private int inArr(int x, int y)
         {
             if (x > 9 || x < 0 || y > 9 || y < 0)
             {
@@ -224,15 +213,16 @@ namespace BattleShips
             }
         }
 
-        public void Deploying(int value, int x, int y)
+        private void marking(int cellValue, int mx, int my)
         {
-            field[x, y] = value;
+            field[mx, my] = cellValue;
         }
     }
 
     class Ship_Design
     {
         private int valueDeck;
+        private int buffer = 0;
         protected int[] coordinates;
 
         public Ship_Design(int data)
@@ -246,9 +236,10 @@ namespace BattleShips
             return valueDeck;
         }
 
-        public void SetCoordinates(int[] data)
+        public void SetCoordinates(int number)
         {
-            this.coordinates = data;
+            coordinates[buffer] = number;
+            ++buffer;
         }
 
         public int[] GetCoordinates()
