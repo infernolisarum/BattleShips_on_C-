@@ -10,38 +10,261 @@ namespace BattleShips
     {
         static void Main(string[] args)
         {
-            FieldGeneration myField = new FieldGeneration();
-            FieldGeneration enemyField = new FieldGeneration();
-            for (int i = 0; i < 10; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    Console.Write("{0} ", myField.getField()[i, j]);
-                }
-                Console.Write("\t");
-                for (int k = 0; k < 10; k++)
-                {
-                    Console.Write("{0} ", enemyField.getField()[i, k]);
-                }
-                Console.WriteLine();
-            }
-
-            Console.WriteLine();
-            foreach (Ship_Design ship in myField.getShipsOnField())
-            {
-                foreach (int i in ship.GetCoordinates())
-                    Console.Write(i);
-                Console.WriteLine();
-            }
+            Field_Generation myField = new Field_Generation();
+            Field_Generation enemyField = new Field_Generation();
+            Session session1 = new Session(myField, enemyField);
+            session1.battleLog();
             Console.ReadKey();
         }
     }
 
-    class FieldGeneration : All_Ships
+    class Session : The_Battle
+    {
+        private Field_Generation S_myField;
+        private Field_Generation S_enemyField;
+
+        public Session(Field_Generation mField, Field_Generation eField)
+        {
+            this.S_myField = mField;
+            this.S_enemyField = eField;
+            setMyShips(S_myField.getShipsOnField());
+            setEnemyShips(S_enemyField.getShipsOnField());
+        }
+
+        private void drawBattlefield()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    Console.Write("{0} ", S_myField.getField()[i, j]);
+                }
+                Console.Write("\t");
+                for (int k = 0; k < 10; k++)
+                {
+                    Console.Write("{0} ", S_enemyField.getField()[i, k]);
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+        }
+
+        public void battleLog()
+        {
+            for (int i = 0; i < 200; i++)
+            {
+                Console.Clear();
+                drawBattlefield();
+                if (myTurn() == false)
+                {
+                    battleLog();
+                }
+                if (checkEnemyShips() >= 10)
+                    youWin();
+                adversary();
+                if (checkMyShips() >= 10)
+                    winBot();
+            }
+        }
+
+        private bool myTurn()
+        {
+            try
+            {
+                Console.WriteLine("Введите значение по оси Х (0 – 9)");
+                int x = Convert.ToInt32(Console.ReadLine());
+                Console.WriteLine("Введите значение по оси Y (0 – 9)");
+                int y = Convert.ToInt32(Console.ReadLine());
+                if (checkDataX_Y(Math.Abs(x), Math.Abs(y)) == true)
+                {
+                    myShot(Math.Abs(x), Math.Abs(y));
+                    return true;
+                }
+            }
+            catch
+            {
+                Console.WriteLine("Вы ввели неправильные данные!");
+                Console.ReadKey();
+                return false;
+            }
+            return false;
+        }
+
+        private void adversary()
+        {
+            Console.WriteLine("Ходит ваш противник.");
+            Random ran = new Random();
+            int x = ran.Next(0, 9);
+            int y = ran.Next(0, 9);
+            if (enemyShot(x, y) == true)
+            {
+                if(checkMyShips() >= 10)
+                {
+                    winBot();
+                }
+            }
+        }
+
+        private void youWin()
+        {
+            Console.Clear();
+            Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep();
+            Console.WriteLine("Вы выйграли.");
+            Console.ReadKey();
+            Environment.Exit(0);
+        }
+
+        private void winBot()
+        {
+            Console.Clear();
+            Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep();
+            Console.WriteLine("Вы проиграли.");
+            Console.ReadKey();
+            Environment.Exit(0);
+        }
+
+        private bool checkDataX_Y(int x, int y)
+        {
+            if (x > 9 || y > 9) return false;
+            return true;
+        }
+
+        public void timer() { }//!!!
+    }
+
+    class The_Battle
+    {
+        Ship_Design[] MyShips;
+        Ship_Design[] EnemyShips;
+        private int[] myShots;
+        private int[] enemyShots;
+        private int myArrLen = 0;
+        private int enemyArrLen = 0;
+
+        public The_Battle()
+        {
+            myShots = new int[200];
+            enemyShots = new int[200];
+            for(int i = 0; i < 200; i++)
+            {
+                myShots[i] = -1;
+                enemyShots[i] = -1;
+            }
+        }
+
+        protected void setMyShips(Ship_Design[] myShips)
+        {
+            MyShips = myShips;
+        }
+
+        protected void setEnemyShips(Ship_Design[] enemyShips)
+        {
+            EnemyShips = enemyShips;
+        }
+
+        protected void myShot(int x, int y)
+        {
+            for(int i = 0; i < myShots.Length;)
+            {
+                if((x != myShots[i])&&(y != myShots[++i]))
+                {
+                    i++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            recordingMyShots(x, y);
+            foreach (Ship_Design ship in EnemyShips)
+            {
+                for (int j = 0; j < ship.GetCoordinates().Length; j++)
+                {
+                    if ((ship.GetCoordinates()[j] == x) && (ship.GetCoordinates()[++j] == y))
+                    {
+                        ship.setHit();
+                        Console.Beep();
+                    }
+                }
+            }
+        }
+
+        protected int[] getEnemyShots()
+        {
+            return enemyShots;
+        }
+
+        protected bool enemyShot(int x, int y)
+        {
+            for (int i = 0; i < getEnemyShots().Length;)
+            {
+                if ((x != getEnemyShots()[i]) && (y != getEnemyShots()[++i]))
+                {
+                    ++i;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            recordingEnemyShots(x, y);
+            foreach (Ship_Design ship in MyShips)
+            {
+                for (int i = 0; i < ship.GetCoordinates().Length; i++)
+                {
+                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[++i] == y))//!!!
+                         //System.IndexOutOfRangeException: "Индекс находился вне границ массива."
+                    {
+                        ship.setHit();
+                        Console.Beep();
+                    }
+                }
+            }
+            return true;
+        }
+
+        protected int checkMyShips()
+        {
+            int destroyedShip = 0;
+            foreach (Ship_Design ship in MyShips)
+            {
+                destroyedShip += ship.getCurrentStatus();
+            }
+            return destroyedShip;
+        }
+
+        protected int checkEnemyShips()
+        {
+            int destroyedShips = 0;
+            foreach(Ship_Design ship in EnemyShips)
+            {
+                destroyedShips += ship.getCurrentStatus();
+            }
+            return destroyedShips;
+        }
+
+        private void recordingMyShots(int x, int y)
+        {
+            myShots[myArrLen] = x;
+            ++myArrLen;
+            myShots[myArrLen] = y;
+            ++myArrLen;
+        }
+
+        private void recordingEnemyShots(int x, int y)
+        {
+            enemyShots[enemyArrLen] = x;
+            ++enemyArrLen;
+            enemyShots[enemyArrLen] = y;
+            ++enemyArrLen;
+        }
+    }
+
+    class Field_Generation : All_Ships
     {
         private int[,] field;
 
-        public FieldGeneration()
+        public Field_Generation()
         {
             createField();
             deployingOnField();
@@ -223,6 +446,8 @@ namespace BattleShips
     {
         private int valueDeck;
         private int buffer = 0;
+        private int hit = 0;
+        private int status = 0;
         protected int[] coordinates;
 
         public Ship_Design(int data)
@@ -245,6 +470,18 @@ namespace BattleShips
         public int[] GetCoordinates()
         {
             return coordinates;
+        }
+
+        public void setHit()
+        {
+            hit++;
+            if (hit == valueDeck)
+                status++;
+        }
+
+        public int getCurrentStatus()
+        {
+            return status;
         }
     }
 
