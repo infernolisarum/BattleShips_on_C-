@@ -10,8 +10,8 @@ namespace BattleShips
     {
         static void Main(string[] args)
         {
-            Field_Generation myField = new Field_Generation();
-            Field_Generation enemyField = new Field_Generation();
+            Field_Creation myField = new Field_Creation();
+            Field_Creation enemyField = new Field_Creation();
             Session session1 = new Session(myField, enemyField);
             session1.battleLog();
             Console.ReadKey();
@@ -20,15 +20,59 @@ namespace BattleShips
 
     class Session : The_Battle
     {
-        private Field_Generation S_myField;
-        private Field_Generation S_enemyField;
+        private char[,] myCharField = new char[10, 10];
+        private char[,] enCharField = new char[10, 10];
+        private Field_Creation S_myField;
+        private Field_Creation S_enemyField;
 
-        public Session(Field_Generation mField, Field_Generation eField)
+        public Session(Field_Creation mField, Field_Creation eField)
         {
             this.S_myField = mField;
             this.S_enemyField = eField;
             setMyShips(S_myField.getShipsOnField());
             setEnemyShips(S_enemyField.getShipsOnField());
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    myCharField[i, j] = '0';
+                    enCharField[i, j] = '0';
+                }
+            }
+            superpositionArrays();
+        }
+
+        private void superpositionArrays()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    if (S_myField.getField()[i, j] == 0) myCharField[i, j] = '0';
+                    else if (S_myField.getField()[i, j] == 1) myCharField[i, j] = '1';
+                    else if (S_myField.getField()[i, j] == 2) myCharField[i, j] = '2';
+                    else if (S_myField.getField()[i, j] == 3) myCharField[i, j] = '3';
+                    else if (S_myField.getField()[i, j] == 4) myCharField[i, j] = '4';
+                }
+            }
+        }
+
+        private void enMapCorrective(int x, int y)
+        {
+            if (S_enemyField.getField()[x, y] == 1) enCharField[x, y] = '1';
+            else if (S_enemyField.getField()[x, y] == 2) enCharField[x, y] = '2';
+            else if (S_enemyField.getField()[x, y] == 3) enCharField[x, y] = '3';
+            else if (S_enemyField.getField()[x, y] == 4) enCharField[x, y] = '4';
+            else enCharField[x, y] = '#';
+        }
+
+        private void myMapCorrective(int x, int y)
+        {
+            if (S_myField.getField()[x, y] == 1) myCharField[x, y] = 'X';
+            else if (S_myField.getField()[x, y] == 2) myCharField[x, y] = 'X';
+            else if (S_myField.getField()[x, y] == 3) myCharField[x, y] = 'X';
+            else if (S_myField.getField()[x, y] == 4) myCharField[x, y] = 'X';
+            else myCharField[x, y] = '#';
         }
 
         private void drawBattlefield()
@@ -37,12 +81,12 @@ namespace BattleShips
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    Console.Write("{0} ", S_myField.getField()[i, j]);
+                    Console.Write(myCharField[i, j] + " ");
                 }
                 Console.Write("\t");
                 for (int k = 0; k < 10; k++)
                 {
-                    Console.Write("{0} ", S_enemyField.getField()[i, k]);
+                    Console.Write(enCharField[i, k] + " ");
                 }
                 Console.WriteLine();
             }
@@ -86,6 +130,7 @@ namespace BattleShips
             if (checkDataX_Y(Math.Abs(x), Math.Abs(y)) == true)
             {
                 myShot(Math.Abs(x), Math.Abs(y));
+                enMapCorrective(x, y);
                 return true;
             }
             else
@@ -102,8 +147,9 @@ namespace BattleShips
             Random ran = new Random();
             int x = ran.Next(0, 9);
             int y = ran.Next(0, 9);
-            if (checkEnemyShot(x, y) == true)
+            if (enemyShot(x, y) == true)
             {
+                myMapCorrective(x, y);
                 if (checkMyShips() >= 10)
                 {
                     winBot();
@@ -134,8 +180,6 @@ namespace BattleShips
             if ((x >= 0 && x < 10) && (y >= 0 && y < 10)) return true;
             return false;
         }
-
-        public void timer() { }//!!!
     }
 
     class The_Battle
@@ -201,7 +245,7 @@ namespace BattleShips
             return historyEnemyShots;
         }
 
-        protected bool checkEnemyShot(int x, int y)
+        protected bool enemyShot(int x, int y)
         {
             for (int i = 0; i < getAllEnemyShots().Length;)
             {
@@ -267,11 +311,11 @@ namespace BattleShips
         }
     }
 
-    class Field_Generation : All_Ships
+    class Field_Creation : All_Ships
     {
         private int[,] field;
 
-        public Field_Generation()
+        public Field_Creation()
         {
             createField();
             deployingOnField();
