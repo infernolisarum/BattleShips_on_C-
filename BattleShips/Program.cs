@@ -69,23 +69,29 @@ namespace BattleShips
 
         private bool myTurn()
         {
+            int x, y;
             try
             {
-                Console.WriteLine("Введите значение по оси Х (0 – 9)");
-                int x = Convert.ToInt32(Console.ReadLine());
-                Console.WriteLine("Введите значение по оси Y (0 – 9)");
-                int y = Convert.ToInt32(Console.ReadLine());
-                if (checkDataX_Y(Math.Abs(x), Math.Abs(y)) == true)
-                {
-                    myShot(Math.Abs(x), Math.Abs(y));
-                    return true;
-                }
+                Console.WriteLine("Введите значение по оси Х [0 – 9]");
+                x = Convert.ToInt32(Console.ReadLine());
+                Console.WriteLine("Введите значение по оси Y [0 – 9]");
+                y = Convert.ToInt32(Console.ReadLine());
             }
             catch
             {
                 Console.WriteLine("Вы ввели неправильные данные!");
                 Console.ReadKey();
                 return false;
+            }
+            if (checkDataX_Y(Math.Abs(x), Math.Abs(y)) == true)
+            {
+                myShot(Math.Abs(x), Math.Abs(y));
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Вы ввели неправильные данные!");
+                Console.ReadKey();
             }
             return false;
         }
@@ -96,9 +102,9 @@ namespace BattleShips
             Random ran = new Random();
             int x = ran.Next(0, 9);
             int y = ran.Next(0, 9);
-            if (enemyShot(x, y) == true)
+            if (checkEnemyShot(x, y) == true)
             {
-                if(checkMyShips() >= 10)
+                if (checkMyShips() >= 10)
                 {
                     winBot();
                 }
@@ -125,8 +131,8 @@ namespace BattleShips
 
         private bool checkDataX_Y(int x, int y)
         {
-            if (x > 9 || y > 9) return false;
-            return true;
+            if ((x >= 0 && x < 10) && (y >= 0 && y < 10)) return true;
+            return false;
         }
 
         public void timer() { }//!!!
@@ -136,19 +142,19 @@ namespace BattleShips
     {
         Ship_Design[] MyShips;
         Ship_Design[] EnemyShips;
-        private int[] myShots;
-        private int[] enemyShots;
+        private int[] historyMyShots;
+        private int[] historyEnemyShots;
         private int myArrLen = 0;
         private int enemyArrLen = 0;
 
         public The_Battle()
         {
-            myShots = new int[200];
-            enemyShots = new int[200];
+            historyMyShots = new int[200];
+            historyEnemyShots = new int[200];
             for(int i = 0; i < 200; i++)
             {
-                myShots[i] = -1;
-                enemyShots[i] = -1;
+                historyMyShots[i] = -1;
+                historyEnemyShots[i] = -1;
             }
         }
 
@@ -164,9 +170,9 @@ namespace BattleShips
 
         protected void myShot(int x, int y)
         {
-            for(int i = 0; i < myShots.Length;)
+            for(int i = 0; i < historyMyShots.Length;)
             {
-                if((x != myShots[i])&&(y != myShots[++i]))
+                if((x != historyMyShots[i])&&(y != historyMyShots[++i]))
                 {
                     i++;
                 }
@@ -178,27 +184,28 @@ namespace BattleShips
             recordingMyShots(x, y);
             foreach (Ship_Design ship in EnemyShips)
             {
-                for (int j = 0; j < ship.GetCoordinates().Length; j++)
+                for (int i = 0, j = 1; i < ship.GetCoordinates().Length / 2; i++, j++)
                 {
-                    if ((ship.GetCoordinates()[j] == x) && (ship.GetCoordinates()[++j] == y))
+                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[j] == y))
                     {
                         ship.setHit();
                         Console.Beep();
+                        break;
                     }
                 }
             }
         }
 
-        protected int[] getEnemyShots()
+        protected int[] getAllEnemyShots()
         {
-            return enemyShots;
+            return historyEnemyShots;
         }
 
-        protected bool enemyShot(int x, int y)
+        protected bool checkEnemyShot(int x, int y)
         {
-            for (int i = 0; i < getEnemyShots().Length;)
+            for (int i = 0; i < getAllEnemyShots().Length;)
             {
-                if ((x != getEnemyShots()[i]) && (y != getEnemyShots()[++i]))
+                if ((x != getAllEnemyShots()[i]) && (y != getAllEnemyShots()[++i]))
                 {
                     ++i;
                 }
@@ -210,13 +217,13 @@ namespace BattleShips
             recordingEnemyShots(x, y);
             foreach (Ship_Design ship in MyShips)
             {
-                for (int i = 0; i < ship.GetCoordinates().Length; i++)
+                for (int i = 0, j = 1; i < ship.GetCoordinates().Length / 2; i++, j++)
                 {
-                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[++i] == y))//!!!
-                         //System.IndexOutOfRangeException: "Индекс находился вне границ массива."
+                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[j] == y))
                     {
                         ship.setHit();
                         Console.Beep();
+                        return true;
                     }
                 }
             }
@@ -245,17 +252,17 @@ namespace BattleShips
 
         private void recordingMyShots(int x, int y)
         {
-            myShots[myArrLen] = x;
+            historyMyShots[myArrLen] = x;
             ++myArrLen;
-            myShots[myArrLen] = y;
+            historyMyShots[myArrLen] = y;
             ++myArrLen;
         }
 
         private void recordingEnemyShots(int x, int y)
         {
-            enemyShots[enemyArrLen] = x;
+            historyEnemyShots[enemyArrLen] = x;
             ++enemyArrLen;
-            enemyShots[enemyArrLen] = y;
+            historyEnemyShots[enemyArrLen] = y;
             ++enemyArrLen;
         }
     }
