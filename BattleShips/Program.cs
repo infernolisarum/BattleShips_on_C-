@@ -10,46 +10,44 @@ namespace BattleShips
     {
         static void Main(string[] args)
         {
-            Field_Creation myField = new Field_Creation();
-            Field_Creation enemyField = new Field_Creation();
-            Session session1 = new Session(myField, enemyField);
-            session1.battleLog();
+            Session session = new Session();
+            session.battleLog();
             Console.ReadKey();
         }
     }
 
     class Session : The_Battle
     {
+        Random rnd = new Random();
+        int[,] allEnemyShots = new int[10, 10];
         private char[,] myCharField = new char[10, 10];
         private char[,] enCharField = new char[10, 10];
-        private Field_Creation S_myField;
-        private Field_Creation S_enemyField;
+        private Field_Creation S_myField = new Field_Creation();
+        private Field_Creation S_enemyField = new Field_Creation();
 
-        public Session(Field_Creation mField, Field_Creation eField)
+        public Session()
         {
-            this.S_myField = mField;
-            this.S_enemyField = eField;
             setMyShips(S_myField.getShipsOnField());
             setEnemyShips(S_enemyField.getShipsOnField());
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
+                    allEnemyShots[i, j] = 10;
                     myCharField[i, j] = '0';
                     enCharField[i, j] = '0';
                 }
             }
-            superpositionArrays();
+            superpositionMyArrays();
         }
 
-        private void superpositionArrays()
+        private void superpositionMyArrays()
         {
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    if (S_myField.getField()[i, j] == 0) myCharField[i, j] = '0';
-                    else if (S_myField.getField()[i, j] == 1) myCharField[i, j] = '1';
+                    if (S_myField.getField()[i, j] == 1) myCharField[i, j] = '1';
                     else if (S_myField.getField()[i, j] == 2) myCharField[i, j] = '2';
                     else if (S_myField.getField()[i, j] == 3) myCharField[i, j] = '3';
                     else if (S_myField.getField()[i, j] == 4) myCharField[i, j] = '4';
@@ -144,17 +142,34 @@ namespace BattleShips
         private void adversary()
         {
             Console.WriteLine("Ходит ваш противник.");
-            Random ran = new Random();
-            int x = ran.Next(0, 9);
-            int y = ran.Next(0, 9);
-            if (enemyShot(x, y) == true)
+            link:
+            int x = rnd.Next(0, 9);
+            int y;
+            y = generationShotCoordinates(x, allEnemyShots);
+            if (y == 10) goto link;
+            enemyShot(x, y);
+            myMapCorrective(x, y);
+        }
+
+        private int generationShotCoordinates(int x, int[,] allEnemyShots)
+        {
+            int y;
+            y = rnd.Next(0, 9);
+            if (allEnemyShots[x, y] < 10)
             {
-                myMapCorrective(x, y);
-                if (checkMyShips() >= 10)
+                int counter = 0;
+                for (int i = 0; i < 10; i++)
                 {
-                    winBot();
+                    if (allEnemyShots[x, i] < 10) counter++;
+                }
+                if (counter == 10) return y = 10;
+                for (int i = 0; allEnemyShots[x, y] < 10; i++)
+                {
+                    y = rnd.Next(0, 9);
                 }
             }
+            allEnemyShots[x, y] = y;
+            return y;
         }
 
         private void youWin()
@@ -187,18 +202,14 @@ namespace BattleShips
         Ship_Design[] MyShips;
         Ship_Design[] EnemyShips;
         private int[] historyMyShots;
-        private int[] historyEnemyShots;
         private int myArrLen = 0;
-        private int enemyArrLen = 0;
 
         public The_Battle()
         {
             historyMyShots = new int[200];
-            historyEnemyShots = new int[200];
             for(int i = 0; i < 200; i++)
             {
                 historyMyShots[i] = -1;
-                historyEnemyShots[i] = -1;
             }
         }
 
@@ -210,6 +221,14 @@ namespace BattleShips
         protected void setEnemyShips(Ship_Design[] enemyShips)
         {
             EnemyShips = enemyShips;
+        }
+
+        private void setHistoryMyShot(int x, int y)
+        {
+            historyMyShots[myArrLen] = x;
+            myArrLen++;
+            historyMyShots[myArrLen] = y;
+            myArrLen++;
         }
 
         protected void myShot(int x, int y)
@@ -225,13 +244,13 @@ namespace BattleShips
                     break;
                 }
             }
-            recordingMyShots(x, y);
             foreach (Ship_Design ship in EnemyShips)
             {
                 for (int i = 0, j = 1; i < ship.GetCoordinates().Length / 2; i++, j++)
                 {
                     if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[j] == y))
                     {
+                        setHistoryMyShot(x, y);
                         ship.setHit();
                         Console.Beep();
                         break;
@@ -240,25 +259,8 @@ namespace BattleShips
             }
         }
 
-        protected int[] getAllEnemyShots()
-        {
-            return historyEnemyShots;
-        }
-
         protected bool enemyShot(int x, int y)
         {
-            for (int i = 0; i < getAllEnemyShots().Length;)
-            {
-                if ((x != getAllEnemyShots()[i]) && (y != getAllEnemyShots()[++i]))
-                {
-                    ++i;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            recordingEnemyShots(x, y);
             foreach (Ship_Design ship in MyShips)
             {
                 for (int i = 0, j = 1; i < ship.GetCoordinates().Length / 2; i++, j++)
@@ -269,9 +271,11 @@ namespace BattleShips
                         Console.Beep();
                         return true;
                     }
+                    ++i;
+                    ++j;
                 }
             }
-            return true;
+            return false;
         }
 
         protected int checkMyShips()
@@ -292,22 +296,6 @@ namespace BattleShips
                 destroyedShips += ship.getCurrentStatus();
             }
             return destroyedShips;
-        }
-
-        private void recordingMyShots(int x, int y)
-        {
-            historyMyShots[myArrLen] = x;
-            ++myArrLen;
-            historyMyShots[myArrLen] = y;
-            ++myArrLen;
-        }
-
-        private void recordingEnemyShots(int x, int y)
-        {
-            historyEnemyShots[enemyArrLen] = x;
-            ++enemyArrLen;
-            historyEnemyShots[enemyArrLen] = y;
-            ++enemyArrLen;
         }
     }
 
