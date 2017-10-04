@@ -19,23 +19,24 @@ namespace BattleShips
     class Session : The_Battle
     {
         Random rnd = new Random();
+        int[] completedLong_Y_arrEnShots = new int[10];
         int[,] allEnemyShots = new int[10, 10];
         private char[,] myCharField = new char[10, 10];
         private char[,] enCharField = new char[10, 10];
-        private Field_Creation S_myField = new Field_Creation();
-        private Field_Creation S_enemyField = new Field_Creation();
+        private Fields_Creation S_myField = new Fields_Creation();
 
         public Session()
         {
-            setMyShips(S_myField.getShipsOnField());
-            setEnemyShips(S_enemyField.getShipsOnField());
+            setMyShips(S_myField.getShipsOnField1());
+            setEnemyShips(S_myField.getShipsOnField2());
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
+                    completedLong_Y_arrEnShots[j] = 10;
                     allEnemyShots[i, j] = 10;
-                    myCharField[i, j] = '0';
-                    enCharField[i, j] = '0';
+                    myCharField[i, j] = '*';
+                    enCharField[i, j] = '*';
                 }
             }
             superpositionMyArrays();
@@ -47,29 +48,29 @@ namespace BattleShips
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    if (S_myField.getField()[i, j] == 1) myCharField[i, j] = '1';
-                    else if (S_myField.getField()[i, j] == 2) myCharField[i, j] = '2';
-                    else if (S_myField.getField()[i, j] == 3) myCharField[i, j] = '3';
-                    else if (S_myField.getField()[i, j] == 4) myCharField[i, j] = '4';
+                    if (S_myField.getField1()[i, j] == 1) myCharField[i, j] = '1';
+                    if (S_myField.getField1()[i, j] == 2) myCharField[i, j] = '2';
+                    if (S_myField.getField1()[i, j] == 3) myCharField[i, j] = '3';
+                    if (S_myField.getField1()[i, j] == 4) myCharField[i, j] = '4';
                 }
             }
         }
 
         private void enMapCorrective(int x, int y)
         {
-            if (S_enemyField.getField()[x, y] == 1) enCharField[x, y] = '1';
-            else if (S_enemyField.getField()[x, y] == 2) enCharField[x, y] = '2';
-            else if (S_enemyField.getField()[x, y] == 3) enCharField[x, y] = '3';
-            else if (S_enemyField.getField()[x, y] == 4) enCharField[x, y] = '4';
+            if (S_myField.getField2()[x, y] == 1) enCharField[x, y] = '1';
+            else if (S_myField.getField2()[x, y] == 2) enCharField[x, y] = '2';
+            else if (S_myField.getField2()[x, y] == 3) enCharField[x, y] = '3';
+            else if (S_myField.getField2()[x, y] == 4) enCharField[x, y] = '4';
             else enCharField[x, y] = '#';
         }
 
         private void myMapCorrective(int x, int y)
         {
-            if (S_myField.getField()[x, y] == 1) myCharField[x, y] = 'X';
-            else if (S_myField.getField()[x, y] == 2) myCharField[x, y] = 'X';
-            else if (S_myField.getField()[x, y] == 3) myCharField[x, y] = 'X';
-            else if (S_myField.getField()[x, y] == 4) myCharField[x, y] = 'X';
+            if (S_myField.getField1()[x, y] == 1) myCharField[x, y] = 'X';
+            else if (S_myField.getField1()[x, y] == 2) myCharField[x, y] = 'X';
+            else if (S_myField.getField1()[x, y] == 3) myCharField[x, y] = 'X';
+            else if (S_myField.getField1()[x, y] == 4) myCharField[x, y] = 'X';
             else myCharField[x, y] = '#';
         }
 
@@ -102,10 +103,17 @@ namespace BattleShips
                     battleLog();
                 }
                 if (checkEnemyShips() >= 10)
+                {
                     youWin();
-                adversary();
+                }
+                for(;adversary() != true;)
+                {
+                    adversary();
+                }
                 if (checkMyShips() >= 10)
+                {
                     winBot();
+                }
             }
         }
 
@@ -139,22 +147,27 @@ namespace BattleShips
             return false;
         }
 
-        private void adversary()
+        private bool adversary()
         {
             Console.WriteLine("Ходит ваш противник.");
-            link:
-            int x = rnd.Next(0, 9);
+            int x = rnd.Next(0, 10);
+            for(int i = 0; i < 10; i++)
+            {
+                if (x == completedLong_Y_arrEnShots[i]) x = rnd.Next(0, 10);
+            }
             int y;
             y = generationShotCoordinates(x, allEnemyShots);
-            if (y == 10) goto link;
+            if (y == 10) return false;
             enemyShot(x, y);
             myMapCorrective(x, y);
+            return true;
         }
 
         private int generationShotCoordinates(int x, int[,] allEnemyShots)
         {
+            int counterCompletedLong = 0;
             int y;
-            y = rnd.Next(0, 9);
+            y = rnd.Next(0, 10);
             if (allEnemyShots[x, y] < 10)
             {
                 int counter = 0;
@@ -162,10 +175,17 @@ namespace BattleShips
                 {
                     if (allEnemyShots[x, i] < 10) counter++;
                 }
-                if (counter == 10) return y = 10;
-                for (int i = 0; allEnemyShots[x, y] < 10; i++)
+                if (counter == 10)
                 {
-                    y = rnd.Next(0, 9);
+                    completedLong_Y_arrEnShots[counterCompletedLong] = x;
+                    ++counterCompletedLong;
+                    return y = 10;
+                }
+                for (;allEnemyShots[x, y] != 10;)
+                {
+                    if (y < 9) y++;
+                    else y--;
+                    if (y < 0) return y = 10;
                 }
             }
             allEnemyShots[x, y] = y;
@@ -223,7 +243,7 @@ namespace BattleShips
             EnemyShips = enemyShips;
         }
 
-        private void setHistoryMyShot(int x, int y)
+        private void setHistoryMyShots(int x, int y)
         {
             historyMyShots[myArrLen] = x;
             myArrLen++;
@@ -250,7 +270,7 @@ namespace BattleShips
                 {
                     if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[j] == y))
                     {
-                        setHistoryMyShot(x, y);
+                        setHistoryMyShots(x, y);
                         ship.setHit();
                         Console.Beep();
                         break;
@@ -299,63 +319,89 @@ namespace BattleShips
         }
     }
 
-    class Field_Creation : All_Ships
+    class Fields_Creation : All_Ships
     {
-        private int[,] field;
+        private int[,] field1;
+        private int[,] field2;
 
-        public Field_Creation()
+        public Fields_Creation()
         {
-            createField();
-            deployingOnField();
+            createFields();
+            deployingOnFields();
         }
 
-        private void createField()
+        public void createFields()
         {
-            field = new int[10, 10];
+            field1 = new int[10, 10];
+            field2 = new int[10, 10];
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    field[i, j] = 0;
+                    field1[i, j] = 0;
+                    field2[i, j] = 0;
                 }
             }
         }
 
-        public int[,] getField()
+        public int[,] getField1()
         {
-            return field;
+            return field1;
         }
 
-        public Ship_Design[] getShipsOnField()
+        public int[,] getField2()
         {
-            return getAllShips();
+            return field2;
         }
 
-        private void deployingOnField()
+        public Ship_Design[] getShipsOnField1()
         {
-            Ship_Design[] ships = getAllShips();
+            return getAllShips1();
+        }
+
+        public Ship_Design[] getShipsOnField2()
+        {
+            return getAllShips2();
+        }
+
+        private void deployingOnFields()
+        {
+            Ship_Design[] ships1 = getAllShips1();
+            Ship_Design[] ships2 = getAllShips2();
             Random rnd = new Random();
-            foreach(Ship_Design ship in ships)
+            foreach(Ship_Design ship in ships1)
             {
                 for (int i = 0; i < 30; i++)
                 {
-                    int X = rnd.Next(0, 9);
-                    int Y = rnd.Next(0, 9);
-                    if (directionRIGHT(ship, X, Y) == true) break;
-                    if (directionLEFT(ship, X, X) == true) break;
-                    if (directionUP(ship, X, Y) == true) break;
-                    if (directionDOWN(ship, X, Y) == true) break;
+                    int X = rnd.Next(0, 10);
+                    int Y = rnd.Next(0, 10);
+                    if (directionRIGHT_1(ship, X, Y) == true) break;
+                    if (directionLEFT_1(ship, X, X) == true) break;
+                    if (directionUP_1(ship, X, Y) == true) break;
+                    if (directionDOWN_1(ship, X, Y) == true) break;
+                }
+            }
+            foreach (Ship_Design ship in ships2)
+            {
+                for (int i = 0; i < 30; i++)
+                {
+                    int X = rnd.Next(0, 10);
+                    int Y = rnd.Next(0, 10);
+                    if (directionRIGHT_2(ship, X, Y) == true) break;
+                    if (directionLEFT_2(ship, X, X) == true) break;
+                    if (directionUP_2(ship, X, Y) == true) break;
+                    if (directionDOWN_2(ship, X, Y) == true) break;
                 }
             }
         }
 
-        private bool directionRIGHT(Ship_Design ship, int x, int y)
+        private bool directionRIGHT_1(Ship_Design ship, int x, int y)
         {
             if (y + (ship.GetValueShip() - 1) > 9) return false;
             int sectionCount = 0;
             for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (checkArea(x, y + i) == 0)
+                if (checkArea1(x, y + i) == 0)
                 {
                     sectionCount++;
                 }
@@ -365,7 +411,7 @@ namespace BattleShips
             {
                 for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    marking(ship.GetValueShip(), x, y + i);
+                    marking1(ship.GetValueShip(), x, y + i);
                     ship.SetCoordinates(x);
                     ship.SetCoordinates(y + i);
                 }
@@ -374,13 +420,13 @@ namespace BattleShips
             return false;
         }
 
-        private bool directionLEFT(Ship_Design ship, int x, int y)
+        private bool directionRIGHT_2(Ship_Design ship, int x, int y)
         {
-            if (y - (ship.GetValueShip() - 1) < 0) return false;
+            if (y + (ship.GetValueShip() - 1) > 9) return false;
             int sectionCount = 0;
             for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (checkArea(x, y - i) == 0)
+                if (checkArea2(x, y + i) == 0)
                 {
                     sectionCount++;
                 }
@@ -390,7 +436,32 @@ namespace BattleShips
             {
                 for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    marking(ship.GetValueShip(), x, y - i);
+                    marking2(ship.GetValueShip(), x, y + i);
+                    ship.SetCoordinates(x);
+                    ship.SetCoordinates(y + i);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private bool directionLEFT_1(Ship_Design ship, int x, int y)
+        {
+            if (y - (ship.GetValueShip() - 1) < 0) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < ship.GetValueShip(); i++)
+            {
+                if (checkArea1(x, y - i) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == ship.GetValueShip())
+            {
+                for (int i = 0; i < ship.GetValueShip(); i++)
+                {
+                    marking1(ship.GetValueShip(), x, y - i);
                     ship.SetCoordinates(x);
                     ship.SetCoordinates(y - i);
                 }
@@ -399,13 +470,13 @@ namespace BattleShips
             return false;
         }
 
-        private bool directionUP(Ship_Design ship, int x, int y)
+        private bool directionLEFT_2(Ship_Design ship, int x, int y)
         {
-            if (x - (ship.GetValueShip() - 1) < 0) return false;
+            if (y - (ship.GetValueShip() - 1) < 0) return false;
             int sectionCount = 0;
             for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (checkArea(x - i, y) == 0)
+                if (checkArea2(x, y - i) == 0)
                 {
                     sectionCount++;
                 }
@@ -415,7 +486,32 @@ namespace BattleShips
             {
                 for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    marking(ship.GetValueShip(), x - i, y);
+                    marking2(ship.GetValueShip(), x, y - i);
+                    ship.SetCoordinates(x);
+                    ship.SetCoordinates(y - i);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private bool directionUP_1(Ship_Design ship, int x, int y)
+        {
+            if (x - (ship.GetValueShip() - 1) < 0) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < ship.GetValueShip(); i++)
+            {
+                if (checkArea1(x - i, y) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == ship.GetValueShip())
+            {
+                for (int i = 0; i < ship.GetValueShip(); i++)
+                {
+                    marking1(ship.GetValueShip(), x - i, y);
                     ship.SetCoordinates(x - i);
                     ship.SetCoordinates(y);
                 }
@@ -424,13 +520,13 @@ namespace BattleShips
             return false;
         }
 
-        private bool directionDOWN(Ship_Design ship, int x, int y)
+        private bool directionUP_2(Ship_Design ship, int x, int y)
         {
-            if (x + (ship.GetValueShip() - 1) > 9) return false;
+            if (x - (ship.GetValueShip() - 1) < 0) return false;
             int sectionCount = 0;
             for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (checkArea(x + i, y) == 0)
+                if (checkArea2(x - i, y) == 0)
                 {
                     sectionCount++;
                 }
@@ -440,7 +536,32 @@ namespace BattleShips
             {
                 for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    marking(ship.GetValueShip(), x + i, y);
+                    marking2(ship.GetValueShip(), x - i, y);
+                    ship.SetCoordinates(x - i);
+                    ship.SetCoordinates(y);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private bool directionDOWN_1(Ship_Design ship, int x, int y)
+        {
+            if (x + (ship.GetValueShip() - 1) > 9) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < ship.GetValueShip(); i++)
+            {
+                if (checkArea1(x + i, y) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == ship.GetValueShip())
+            {
+                for (int i = 0; i < ship.GetValueShip(); i++)
+                {
+                    marking1(ship.GetValueShip(), x + i, y);
                     ship.SetCoordinates(x + i);
                     ship.SetCoordinates(y);
                 }
@@ -449,7 +570,32 @@ namespace BattleShips
             return false;
         }
 
-        private int checkArea(int x, int y)
+        private bool directionDOWN_2(Ship_Design ship, int x, int y)
+        {
+            if (x + (ship.GetValueShip() - 1) > 9) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < ship.GetValueShip(); i++)
+            {
+                if (checkArea2(x + i, y) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == ship.GetValueShip())
+            {
+                for (int i = 0; i < ship.GetValueShip(); i++)
+                {
+                    marking2(ship.GetValueShip(), x + i, y);
+                    ship.SetCoordinates(x + i);
+                    ship.SetCoordinates(y);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private int checkArea1(int x, int y)
         {
             int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1, x - 1, y, x - 1, y - 1, x, y - 1, x + 1, y - 1 };
             int bufInt = 0;
@@ -458,12 +604,26 @@ namespace BattleShips
                 int bufX = sequenceParam[i];
                 ++i;
                 int bufY = sequenceParam[i];
-                bufInt += inArr(bufX, bufY);
+                bufInt += inArr1(bufX, bufY);
             }
             return bufInt;
         }
 
-        private int inArr(int x, int y)
+        private int checkArea2(int x, int y)
+        {
+            int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1, x - 1, y, x - 1, y - 1, x, y - 1, x + 1, y - 1 };
+            int bufInt = 0;
+            for (int i = 0; i < 18; i++)
+            {
+                int bufX = sequenceParam[i];
+                ++i;
+                int bufY = sequenceParam[i];
+                bufInt += inArr2(bufX, bufY);
+            }
+            return bufInt;
+        }
+
+        private int inArr1(int x, int y)
         {
             if (x > 9 || x < 0 || y > 9 || y < 0)
             {
@@ -471,13 +631,30 @@ namespace BattleShips
             }
             else
             {
-                return field[x, y];
+                return field1[x, y];
             }
         }
 
-        private void marking(int cellValue, int mx, int my)
+        private int inArr2(int x, int y)
         {
-            field[mx, my] = cellValue;
+            if (x > 9 || x < 0 || y > 9 || y < 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return field2[x, y];
+            }
+        }
+
+        private void marking1(int cellValue, int mx, int my)
+        {
+            field1[mx, my] = cellValue;
+        }
+
+        private void marking2(int cellValue, int mx, int my)
+        {
+            field2[mx, my] = cellValue;
         }
     }
 
@@ -513,38 +690,55 @@ namespace BattleShips
 
         public void setHit()
         {
-            hit++;
-            if (hit == valueDeck)
-                status++;
+            ++hit;
         }
 
         public int getCurrentStatus()
         {
+            if (hit == valueDeck)
+                return status = 1;
             return status;
         }
     }
 
     class All_Ships
     {
-        protected Ship_Design[] ships = new Ship_Design[10];
+        protected Ship_Design[] ships1 = new Ship_Design[10];
+        protected Ship_Design[] ships2 = new Ship_Design[10];
         
         public All_Ships()
         {
-            ships[0] = new Ship_Design(4);
-            ships[1] = new Ship_Design(3);
-            ships[2] = new Ship_Design(3);
-            ships[3] = new Ship_Design(2);
-            ships[4] = new Ship_Design(2);
-            ships[5] = new Ship_Design(2);
-            ships[6] = new Ship_Design(1);
-            ships[7] = new Ship_Design(1);
-            ships[8] = new Ship_Design(1);
-            ships[9] = new Ship_Design(1);
+            ships1[0] = new Ship_Design(4);
+            ships1[1] = new Ship_Design(3);
+            ships1[2] = new Ship_Design(3);
+            ships1[3] = new Ship_Design(2);
+            ships1[4] = new Ship_Design(2);
+            ships1[5] = new Ship_Design(2);
+            ships1[6] = new Ship_Design(1);
+            ships1[7] = new Ship_Design(1);
+            ships1[8] = new Ship_Design(1);
+            ships1[9] = new Ship_Design(1);
+
+            ships2[0] = new Ship_Design(4);
+            ships2[1] = new Ship_Design(3);
+            ships2[2] = new Ship_Design(3);
+            ships2[3] = new Ship_Design(2);
+            ships2[4] = new Ship_Design(2);
+            ships2[5] = new Ship_Design(2);
+            ships2[6] = new Ship_Design(1);
+            ships2[7] = new Ship_Design(1);
+            ships2[8] = new Ship_Design(1);
+            ships2[9] = new Ship_Design(1);
         }
 
-        protected Ship_Design[] getAllShips()
+        protected Ship_Design[] getAllShips1()
         {
-            return ships;
+            return ships1;
+        }
+
+        protected Ship_Design[] getAllShips2()
+        {
+            return ships2;
         }
     }
 }
