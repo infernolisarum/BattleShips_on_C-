@@ -8,6 +8,7 @@ namespace BattleShips
 {
     class Program
     {
+        public static Random rnd = new Random();
         static void Main(string[] args)
         {
             Session session = new Session();
@@ -18,7 +19,6 @@ namespace BattleShips
 
     class Session : The_Battle
     {
-        Random rnd = new Random();
         int[] completedLong_Y_arrEnShots = new int[10];
         int[,] allEnemyShots = new int[10, 10];
         private char[,] myCharField = new char[10, 10];
@@ -106,7 +106,11 @@ namespace BattleShips
                 {
                     youWin();
                 }
-                for(;adversary() != true;)
+                if (checkMyShips() >= 10)
+                {
+                    winBot();
+                }
+                for (;adversary() != true;)
                 {
                     adversary();
                 }
@@ -150,10 +154,10 @@ namespace BattleShips
         private bool adversary()
         {
             Console.WriteLine("Ходит ваш противник.");
-            int x = rnd.Next(0, 10);
+            int x = Program.rnd.Next(0, 10);
             for(int i = 0; i < 10; i++)
             {
-                if (x == completedLong_Y_arrEnShots[i]) x = rnd.Next(0, 10);
+                if (x == completedLong_Y_arrEnShots[i]) x = Program.rnd.Next(0, 10);
             }
             int y;
             y = generationShotCoordinates(x, allEnemyShots);
@@ -167,13 +171,19 @@ namespace BattleShips
         {
             int counterCompletedLong = 0;
             int y;
-            y = rnd.Next(0, 10);
-            if (allEnemyShots[x, y] < 10)
+            y = Program.rnd.Next(0, 10);
+            if (allEnemyShots[x, y] != 10)
             {
                 int counter = 0;
                 for (int i = 0; i < 10; i++)
                 {
-                    if (allEnemyShots[x, i] < 10) counter++;
+                    if (allEnemyShots[x, i] == 10)
+                    {
+                        y = i;
+                        allEnemyShots[x, y] = y;
+                        return y;
+                    }
+                    else ++counter;
                 }
                 if (counter == 10)
                 {
@@ -183,8 +193,8 @@ namespace BattleShips
                 }
                 for (;allEnemyShots[x, y] != 10;)
                 {
-                    if (y < 9) y++;
-                    else y--;
+                    if (y < 9) ++y;
+                    else --y;
                     if (y < 0) return y = 10;
                 }
             }
@@ -253,22 +263,18 @@ namespace BattleShips
 
         protected void myShot(int x, int y)
         {
-            for(int i = 0; i < historyMyShots.Length;)
+            for(int i = 0; i < historyMyShots.Length; i++)
             {
-                if((x != historyMyShots[i])&&(y != historyMyShots[++i]))
-                {
-                    i++;
-                }
-                else
+                if((x == historyMyShots[i])&&(y == historyMyShots[++i]))
                 {
                     break;
                 }
             }
             foreach (Ship_Design ship in EnemyShips)
             {
-                for (int i = 0, j = 1; i < ship.GetCoordinates().Length / 2; i++, j++)
+                for (int i = 0; i < ship.GetCoordinates().Length - 1; i++)
                 {
-                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[j] == y))
+                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[++i] == y))
                     {
                         setHistoryMyShots(x, y);
                         ship.setHit();
@@ -283,16 +289,14 @@ namespace BattleShips
         {
             foreach (Ship_Design ship in MyShips)
             {
-                for (int i = 0, j = 1; i < ship.GetCoordinates().Length / 2; i++, j++)
+                for (int i = 0; i < ship.GetCoordinates().Length - 1; i++)
                 {
-                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[j] == y))
+                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[++i] == y))
                     {
                         ship.setHit();
                         Console.Beep();
                         return true;
                     }
-                    ++i;
-                    ++j;
                 }
             }
             return false;
@@ -368,13 +372,12 @@ namespace BattleShips
         {
             Ship_Design[] ships1 = getAllShips1();
             Ship_Design[] ships2 = getAllShips2();
-            Random rnd = new Random();
             foreach(Ship_Design ship in ships1)
             {
                 for (int i = 0; i < 30; i++)
                 {
-                    int X = rnd.Next(0, 10);
-                    int Y = rnd.Next(0, 10);
+                    int X = Program.rnd.Next(0, 10);
+                    int Y = Program.rnd.Next(0, 10);
                     if (directionRIGHT_1(ship, X, Y) == true) break;
                     if (directionLEFT_1(ship, X, X) == true) break;
                     if (directionUP_1(ship, X, Y) == true) break;
@@ -385,8 +388,8 @@ namespace BattleShips
             {
                 for (int i = 0; i < 30; i++)
                 {
-                    int X = rnd.Next(0, 10);
-                    int Y = rnd.Next(0, 10);
+                    int X = Program.rnd.Next(0, 10);
+                    int Y = Program.rnd.Next(0, 10);
                     if (directionRIGHT_2(ship, X, Y) == true) break;
                     if (directionLEFT_2(ship, X, X) == true) break;
                     if (directionUP_2(ship, X, Y) == true) break;
@@ -597,7 +600,8 @@ namespace BattleShips
 
         private int checkArea1(int x, int y)
         {
-            int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1, x - 1, y, x - 1, y - 1, x, y - 1, x + 1, y - 1 };
+            int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1, x - 1, y,
+                x - 1, y - 1, x, y - 1, x + 1, y - 1 };
             int bufInt = 0;
             for (int i = 0; i < 18; i++)
             {
@@ -662,7 +666,7 @@ namespace BattleShips
     {
         private int valueDeck;
         private int buffer = 0;
-        private int hit = 0;
+        public int hit = 0;
         private int status = 0;
         protected int[] coordinates;
 
