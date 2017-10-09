@@ -8,354 +8,726 @@ namespace BattleShips
 {
     class Program
     {
+        public static Random rnd = new Random();
         static void Main(string[] args)
         {
-            Session session = new Session();
-            session.battleLog();
+            Compiler compiler = new Compiler();
+            compiler.battleLog();
             Console.ReadKey();
         }
     }
-
-    class Session : The_Battle
+    class Compiler
     {
-        Random rnd = new Random();
-        int[,] allEnemyShots = new int[10, 10];
-        private char[,] myCharField = new char[10, 10];
-        private char[,] enCharField = new char[10, 10];
-        private Field_Creation S_myField = new Field_Creation();
-        private Field_Creation S_enemyField = new Field_Creation();
+        private int globalX;
+        private int globalY;
+        private int status = 0;
+        private int[,] myMap;
+        private int[,] enMap;
+        private char[,] myBF = new char[10, 10];
+        private char[,] enBF = new char[10, 10];
+        public int myHit = 0;
+        public int enHit = 0;
+        private static Fields_Creation newField = new Fields_Creation();
 
-        public Session()
+        public Compiler()
         {
-            setMyShips(S_myField.getShipsOnField());
-            setEnemyShips(S_enemyField.getShipsOnField());
-            for (int i = 0; i < 10; i++)
+            myMap = newField.getField1();
+            enMap = newField.getField2();
+            for(int i = 0; i < 10; i++)
             {
-                for (int j = 0; j < 10; j++)
+                for(int j = 0; j < 10; j++)
                 {
-                    allEnemyShots[i, j] = 10;
-                    myCharField[i, j] = '0';
-                    enCharField[i, j] = '0';
-                }
-            }
-            superpositionMyArrays();
-        }
-
-        private void superpositionMyArrays()
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    if (S_myField.getField()[i, j] == 1) myCharField[i, j] = '1';
-                    else if (S_myField.getField()[i, j] == 2) myCharField[i, j] = '2';
-                    else if (S_myField.getField()[i, j] == 3) myCharField[i, j] = '3';
-                    else if (S_myField.getField()[i, j] == 4) myCharField[i, j] = '4';
+                    enBF[i, j] = '*';
+                    if (myMap[i, j] == 1) myBF[i, j] = '1';
+                    else if (myMap[i, j] == 2) myBF[i, j] = '2';
+                    else if (myMap[i, j] == 3) myBF[i, j] = '3';
+                    else if (myMap[i, j] == 4) myBF[i, j] = '4';
+                    else myBF[i, j] = '*';
                 }
             }
         }
 
-        private void enMapCorrective(int x, int y)
+        private void myInterface()
         {
-            if (S_enemyField.getField()[x, y] == 1) enCharField[x, y] = '1';
-            else if (S_enemyField.getField()[x, y] == 2) enCharField[x, y] = '2';
-            else if (S_enemyField.getField()[x, y] == 3) enCharField[x, y] = '3';
-            else if (S_enemyField.getField()[x, y] == 4) enCharField[x, y] = '4';
-            else enCharField[x, y] = '#';
-        }
-
-        private void myMapCorrective(int x, int y)
-        {
-            if (S_myField.getField()[x, y] == 1) myCharField[x, y] = 'X';
-            else if (S_myField.getField()[x, y] == 2) myCharField[x, y] = 'X';
-            else if (S_myField.getField()[x, y] == 3) myCharField[x, y] = 'X';
-            else if (S_myField.getField()[x, y] == 4) myCharField[x, y] = 'X';
-            else myCharField[x, y] = '#';
-        }
-
-        private void drawBattlefield()
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    Console.Write(myCharField[i, j] + " ");
-                }
-                Console.Write("\t");
-                for (int k = 0; k < 10; k++)
-                {
-                    Console.Write(enCharField[i, k] + " ");
-                }
-                Console.WriteLine();
-            }
-            Console.WriteLine();
-        }
-
-        public void battleLog()
-        {
-            for (int i = 0; i < 200; i++)
-            {
-                Console.Clear();
-                drawBattlefield();
-                if (myTurn() == false)
-                {
-                    battleLog();
-                }
-                if (checkEnemyShips() >= 10)
-                    youWin();
-                adversary();
-                if (checkMyShips() >= 10)
-                    winBot();
-            }
-        }
-
-        private bool myTurn()
-        {
-            int x, y;
+            int x;
+            int y;
             try
             {
                 Console.WriteLine("Введите значение по оси Х [0 – 9]");
                 x = Convert.ToInt32(Console.ReadLine());
                 Console.WriteLine("Введите значение по оси Y [0 – 9]");
                 y = Convert.ToInt32(Console.ReadLine());
+                if(x < 0 || x > 9 || y < 0 || y > 9)
+                {
+                    Console.WriteLine("Вы ввели не верное значение.");
+                    myInterface();
+                }
+                if (enBF[x, y] != '*') return;
+                else
+                {
+                    if (enMap[x, y] == 1)
+                    {
+                        enBF[x, y] = '1';
+                        enHit++;
+                        Console.Beep();
+                    }
+                    else if (enMap[x, y] == 2)
+                    {
+                        enBF[x, y] = '2';
+                        enHit++;
+                        Console.Beep();
+                    }
+                    else if (enMap[x, y] == 3)
+                    {
+                        enBF[x, y] = '3';
+                        enHit++;
+                        Console.Beep();
+                    }
+                    else if (enMap[x, y] == 4)
+                    {
+                        enBF[x, y] = '4';
+                        enHit++;
+                        Console.Beep();
+                    }
+                    else
+                    {
+                        enBF[x, y] = '#';
+                    }
+                }
             }
             catch
             {
-                Console.WriteLine("Вы ввели неправильные данные!");
-                Console.ReadKey();
-                return false;
+                Console.WriteLine("Вы ввели не верное значение.");
+                myInterface();
             }
-            if (checkDataX_Y(Math.Abs(x), Math.Abs(y)) == true)
+            
+        }
+
+        private void enShot()
+        {
+            if (status == 0)
             {
-                myShot(Math.Abs(x), Math.Abs(y));
-                enMapCorrective(x, y);
-                return true;
+                globalX = Program.rnd.Next(0, 10);
+                globalY = Program.rnd.Next(0, 10);
             }
+            if (myBF[globalX, globalY] == 'X' || myBF[globalX, globalY] == '#') { enShot(); }
             else
             {
-                Console.WriteLine("Вы ввели неправильные данные!");
-                Console.ReadKey();
-            }
-            return false;
-        }
-
-        private void adversary()
-        {
-            Console.WriteLine("Ходит ваш противник.");
-            link:
-            int x = rnd.Next(0, 9);
-            int y;
-            y = generationShotCoordinates(x, allEnemyShots);
-            if (y == 10) goto link;
-            enemyShot(x, y);
-            myMapCorrective(x, y);
-        }
-
-        private int generationShotCoordinates(int x, int[,] allEnemyShots)
-        {
-            int y;
-            y = rnd.Next(0, 9);
-            if (allEnemyShots[x, y] < 10)
-            {
-                int counter = 0;
-                for (int i = 0; i < 10; i++)
+                if(myMap[globalX, globalY] == 1)
                 {
-                    if (allEnemyShots[x, i] < 10) counter++;
+                    finishHim(1, globalX, globalY);
                 }
-                if (counter == 10) return y = 10;
-                for (int i = 0; allEnemyShots[x, y] < 10; i++)
+                else if (myMap[globalX, globalY] == 2)
                 {
-                    y = rnd.Next(0, 9);
+                    finishHim(2, globalX, globalY);
                 }
-            }
-            allEnemyShots[x, y] = y;
-            return y;
-        }
-
-        private void youWin()
-        {
-            Console.Clear();
-            Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep();
-            Console.WriteLine("Вы выйграли.");
-            Console.ReadKey();
-            Environment.Exit(0);
-        }
-
-        private void winBot()
-        {
-            Console.Clear();
-            Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep();
-            Console.WriteLine("Вы проиграли.");
-            Console.ReadKey();
-            Environment.Exit(0);
-        }
-
-        private bool checkDataX_Y(int x, int y)
-        {
-            if ((x >= 0 && x < 10) && (y >= 0 && y < 10)) return true;
-            return false;
-        }
-    }
-
-    class The_Battle
-    {
-        Ship_Design[] MyShips;
-        Ship_Design[] EnemyShips;
-        private int[] historyMyShots;
-        private int myArrLen = 0;
-
-        public The_Battle()
-        {
-            historyMyShots = new int[200];
-            for(int i = 0; i < 200; i++)
-            {
-                historyMyShots[i] = -1;
-            }
-        }
-
-        protected void setMyShips(Ship_Design[] myShips)
-        {
-            MyShips = myShips;
-        }
-
-        protected void setEnemyShips(Ship_Design[] enemyShips)
-        {
-            EnemyShips = enemyShips;
-        }
-
-        private void setHistoryMyShot(int x, int y)
-        {
-            historyMyShots[myArrLen] = x;
-            myArrLen++;
-            historyMyShots[myArrLen] = y;
-            myArrLen++;
-        }
-
-        protected void myShot(int x, int y)
-        {
-            for(int i = 0; i < historyMyShots.Length;)
-            {
-                if((x != historyMyShots[i])&&(y != historyMyShots[++i]))
+                else if (myMap[globalX, globalY] == 3)
                 {
-                    i++;
+                    finishHim(3, globalX, globalY);
+                }
+                else if (myMap[globalX, globalY] == 4)
+                {
+                    finishHim(4, globalX, globalY);
                 }
                 else
                 {
-                    break;
+                    status = 0;
+                    myBF[globalX, globalY] = '#';
                 }
             }
-            foreach (Ship_Design ship in EnemyShips)
+        }
+
+        private void finishHim(int val, int x, int y)
+        {
+            if(val == 1)
             {
-                for (int i = 0, j = 1; i < ship.GetCoordinates().Length / 2; i++, j++)
+                myHit++;
+                Console.Beep();
+                myBF[x, y] = 'X';
+                if(x - 1 >= 0) myBF[x -1, y] = '#';
+                if(x - 1 >= 0 && y + 1 < 10) myBF[x - 1, y+1] = '#';
+                if (y + 1 < 10) myBF[x, y+1] = '#';
+                if (x + 1 < 10 && y + 1 < 10) myBF[x + 1, y+1] = '#';
+                if (x + 1 < 10) myBF[x + 1, y] = '#';
+                if (x + 1 < 10 && y - 1 >= 0) myBF[x + 1, y-1] = '#';
+                if (y - 1 >= 0) myBF[x, y - 1] = '#';
+                if (x - 1 >= 0 && y - 1 >= 0) myBF[x - 1, y - 1] = '#';
+            }
+            else if(val == 2)
+            {
+                if (x - 1 >= 0 && myMap[x - 1, y] == 2)
                 {
-                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[j] == y))
-                    {
-                        setHistoryMyShot(x, y);
-                        ship.setHit();
-                        Console.Beep();
-                        break;
-                    }
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    globalX = x - 1;
+                    globalY = y;
+                    status++;
+                    if (status == 2)
+                        status = 0;
                 }
-            }
-        }
-
-        protected bool enemyShot(int x, int y)
-        {
-            foreach (Ship_Design ship in MyShips)
-            {
-                for (int i = 0, j = 1; i < ship.GetCoordinates().Length / 2; i++, j++)
+                else if (x + 1 < 10 && myMap[x + 1, y] == 2)
                 {
-                    if ((ship.GetCoordinates()[i] == x) && (ship.GetCoordinates()[j] == y))
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    globalX = x + 1;
+                    globalY = y;
+                    status++;
+                    if (status == 2)
+                        status = 0;
+                }
+                else if (y - 1 >= 0 && myMap[x, y - 1] == 2)
+                {
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    globalX = x;
+                    globalY = y - 1;
+                    status++;
+                    if (status == 2)
+                        status = 0;
+                }
+                else if (y + 1 < 10 && myMap[x, y + 1] == 2)
+                {
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    globalX = x;
+                    globalY = y + 1;
+                    status++;
+                    if (status == 2)
+                        status = 0;
+                }
+
+                else status = 0;
+            }
+            else if(val == 3)
+            {
+                if (x - 1 < 0 && myMap[x + 1, y] == 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
                     {
-                        ship.setHit();
-                        Console.Beep();
-                        return true;
+                        status = 0;
+                        return;
                     }
-                    ++i;
-                    ++j;
+                    globalX = x + status;
+                    globalY = y;
+                }
+                else if (x + 1 > 9 && myMap[x - 1, y] == 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x - status;
+                    globalY = y;
+                }
+                else if (y - 1 < 0 && myMap[x, y + 1] == 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y + status;
+                }
+                else if (y + 1 > 9 && myMap[x, y - 1] == 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y - status;
+                }
+
+                else if (x - 1 >= 0 && myMap[x - 1, y] != 3 && x + 1 < 10 && myMap[x + 1, y] == 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x + status;
+                    globalY = y;
+                }
+                else if (x + 1 < 10 && myMap[x + 1, y] != 3 && x - 1 >= 0 && myMap[x - 1, y] == 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x - status;
+                    globalY = y;
+                }
+                else if (y - 1 >= 0 && myMap[x, y - 1] != 3 && y + 1 < 10 && myMap[x, y + 1] == 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y + status;
+                }
+                else if (y + 1 < 10 && myMap[x, y + 1] != 3 && y - 1 >= 0 && myMap[x, y - 1] == 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y - status;
+                }
+
+                else if (x - 1 >= 0 && y - 1 < 0 || y + 1 > 9)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x - 1;
+                    globalY = y;
+                }
+                else if (x + 1 < 10 && y - 1 < 0 || y + 1 > 9)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x + 1;
+                    globalY = y;
+                }
+                else if (y - 1 >= 0 && x - 1 < 0 || x + 1 > 9)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y - 1;
+                }
+                else if (y + 1 < 10 && x - 1 < 0 || x + 1 > 9)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y + 1;
+                }
+
+                else if (x - 1 >= 0 && myMap[x, y - 1] != 3 && myMap[x, y + 1] != 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x - 1;
+                    globalY = y;
+                }
+                else if (x + 1 < 10 && myMap[x, y - 1] != 3 && myMap[x, y + 1] != 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x + 1;
+                    globalY = y;
+                }
+                else if (y - 1 >= 0 && myBF[x, y - 1] != 'X' && myMap[x + 1, y] != 3 && myMap[x - 1, y] != 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y - 1;
+                }
+                else if (y + 1 < 10 && myBF[x, y + 1] != 'X' && myMap[x + 1, y] != 3 && myMap[x - 1, y] != 3)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 3)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y + 1;
+                }
+
+                else status = 0;
+            }
+            else if (val == 4)
+            {
+                if (x - 1 < 0 && myMap[x + 1, y] == 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x + status;
+                    globalY = y;
+                }
+                else if (x + 1 > 9 && myMap[x - 1, y] == 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x - status;
+                    globalY = y;
+                }
+                else if (y - 1 < 0 && myMap[x, y + 1] == 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y + status;
+                }
+                else if (y + 1 > 9 && myMap[x, y - 1] == 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y - status;
+                }
+
+                else if (x - 1 >= 0 && myMap[x - 1, y] != 4 && x + 1 < 10 && myMap[x + 1, y] == 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x + status;
+                    globalY = y;
+                }
+                else if (x + 1 < 10 && myMap[x + 1, y] != 4 && x - 1 >= 0 && myMap[x - 1, y] == 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x - status;
+                    globalY = y;
+                }
+                else if (y - 1 >= 0 && myMap[x, y - 1] != 4 && y + 1 < 10 && myMap[x, y + 1] == 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y + status;
+                }
+                else if (y + 1 < 10 && myMap[x, y + 1] != 4 && y - 1 >= 0 && myMap[x, y - 1] == 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y - status;
+                }
+
+                else if (x - 1 >= 0 && y - 1 < 0 || y + 1 > 9)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x - 1;
+                    globalY = y;
+                }
+                else if (x + 1 < 10 && y - 1 < 0 || y + 1 > 9)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x + 1;
+                    globalY = y;
+                }
+                else if (y - 1 >= 0 && x - 1 < 0 || x + 1 > 9)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y - 1;
+                }
+                else if (y + 1 < 10 && x - 1 < 0 || x + 1 > 9)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y + 1;
+                }
+
+                else if (x - 1 >= 0 && myMap[x, y - 1] != 4 && myMap[x, y + 1] != 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x - 1;
+                    globalY = y;
+                }
+                else if (x + 1 < 10 && myMap[x, y - 1] != 4 && myMap[x, y + 1] != 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x + 1;
+                    globalY = y;
+                }
+                else if (y - 1 >= 0 && myBF[x, y - 1] != 'X' && myMap[x + 1, y] != 4 && myMap[x - 1, y] != 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y - 1;
+                }
+                else if (y + 1 < 10 && myBF[x, y + 1] != 'X' && myMap[x + 1, y] != 4 && myMap[x - 1, y] != 4)
+                {
+                    status++;
+                    myBF[x, y] = 'X';
+                    myHit++;
+                    Console.Beep();
+                    if (status == 4)
+                    {
+                        status = 0;
+                        return;
+                    }
+                    globalX = x;
+                    globalY = y + 1;
+                }
+
+                else status = 0;
+            }
+        }
+
+        public void battleLog()
+        {
+            while (enHit != 20 || myHit != 20)
+            {
+                Console.Clear();
+                for (int i = 0; i < 10; i++)
+                {
+                    for (int j = 0; j < 10; j++)
+                    {
+                        Console.Write(myBF[i, j] + " ");
+                    }
+                    Console.Write("\t");
+                    for (int k = 0; k < 10; k++)
+                    {
+                        Console.Write(enBF[i, k] + " ");
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine(enHit);
+                Console.WriteLine(myHit);
+                myInterface();
+                if (enHit == 20)
+                {
+                    Console.Clear();
+                    Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep();
+                    Console.WriteLine("Поздравляю, вы победили!");
+                    Console.ReadKey();
+                    Environment.Exit(0);
+
+                }
+                enShot();
+                if (myHit == 20)
+                {
+                    Console.Clear();
+                    Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep(); Console.Beep();
+                    Console.WriteLine("Вы проиграли.");
+                    Console.ReadKey();
+                    Environment.Exit(0);
+
                 }
             }
-            return false;
-        }
-
-        protected int checkMyShips()
-        {
-            int destroyedShip = 0;
-            foreach (Ship_Design ship in MyShips)
-            {
-                destroyedShip += ship.getCurrentStatus();
-            }
-            return destroyedShip;
-        }
-
-        protected int checkEnemyShips()
-        {
-            int destroyedShips = 0;
-            foreach(Ship_Design ship in EnemyShips)
-            {
-                destroyedShips += ship.getCurrentStatus();
-            }
-            return destroyedShips;
         }
     }
 
-    class Field_Creation : All_Ships
+    partial class Fields_Creation
     {
-        private int[,] field;
+        private int[,] field1;
 
-        public Field_Creation()
+        public int[,] getField1()
         {
-            createField();
-            deployingOnField();
+            return field1;
         }
 
-        private void createField()
-        {
-            field = new int[10, 10];
-            for (int i = 0; i < 10; i++)
-            {
-                for (int j = 0; j < 10; j++)
-                {
-                    field[i, j] = 0;
-                }
-            }
-        }
-
-        public int[,] getField()
-        {
-            return field;
-        }
-
-        public Ship_Design[] getShipsOnField()
-        {
-            return getAllShips();
-        }
-
-        private void deployingOnField()
-        {
-            Ship_Design[] ships = getAllShips();
-            Random rnd = new Random();
-            foreach(Ship_Design ship in ships)
-            {
-                for (int i = 0; i < 30; i++)
-                {
-                    int X = rnd.Next(0, 9);
-                    int Y = rnd.Next(0, 9);
-                    if (directionRIGHT(ship, X, Y) == true) break;
-                    if (directionLEFT(ship, X, X) == true) break;
-                    if (directionUP(ship, X, Y) == true) break;
-                    if (directionDOWN(ship, X, Y) == true) break;
-                }
-            }
-        }
-
-        private bool directionRIGHT(Ship_Design ship, int x, int y)
+        private bool directionRIGHT_1(Ship_Design ship, int x, int y)
         {
             if (y + (ship.GetValueShip() - 1) > 9) return false;
             int sectionCount = 0;
             for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (checkArea(x, y + i) == 0)
+                if (checkArea1(x, y + i) == 0)
                 {
                     sectionCount++;
                 }
@@ -365,7 +737,7 @@ namespace BattleShips
             {
                 for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    marking(ship.GetValueShip(), x, y + i);
+                    marking1(ship.GetValueShip(), x, y + i);
                     ship.SetCoordinates(x);
                     ship.SetCoordinates(y + i);
                 }
@@ -374,13 +746,13 @@ namespace BattleShips
             return false;
         }
 
-        private bool directionLEFT(Ship_Design ship, int x, int y)
+        private bool directionLEFT_1(Ship_Design ship, int x, int y)
         {
             if (y - (ship.GetValueShip() - 1) < 0) return false;
             int sectionCount = 0;
             for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (checkArea(x, y - i) == 0)
+                if (checkArea1(x, y - i) == 0)
                 {
                     sectionCount++;
                 }
@@ -390,7 +762,7 @@ namespace BattleShips
             {
                 for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    marking(ship.GetValueShip(), x, y - i);
+                    marking1(ship.GetValueShip(), x, y - i);
                     ship.SetCoordinates(x);
                     ship.SetCoordinates(y - i);
                 }
@@ -399,13 +771,13 @@ namespace BattleShips
             return false;
         }
 
-        private bool directionUP(Ship_Design ship, int x, int y)
+        private bool directionUP_1(Ship_Design ship, int x, int y)
         {
             if (x - (ship.GetValueShip() - 1) < 0) return false;
             int sectionCount = 0;
             for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (checkArea(x - i, y) == 0)
+                if (checkArea1(x - i, y) == 0)
                 {
                     sectionCount++;
                 }
@@ -415,7 +787,7 @@ namespace BattleShips
             {
                 for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    marking(ship.GetValueShip(), x - i, y);
+                    marking1(ship.GetValueShip(), x - i, y);
                     ship.SetCoordinates(x - i);
                     ship.SetCoordinates(y);
                 }
@@ -424,13 +796,13 @@ namespace BattleShips
             return false;
         }
 
-        private bool directionDOWN(Ship_Design ship, int x, int y)
+        private bool directionDOWN_1(Ship_Design ship, int x, int y)
         {
             if (x + (ship.GetValueShip() - 1) > 9) return false;
             int sectionCount = 0;
             for (int i = 0; i < ship.GetValueShip(); i++)
             {
-                if (checkArea(x + i, y) == 0)
+                if (checkArea1(x + i, y) == 0)
                 {
                     sectionCount++;
                 }
@@ -440,7 +812,7 @@ namespace BattleShips
             {
                 for (int i = 0; i < ship.GetValueShip(); i++)
                 {
-                    marking(ship.GetValueShip(), x + i, y);
+                    marking1(ship.GetValueShip(), x + i, y);
                     ship.SetCoordinates(x + i);
                     ship.SetCoordinates(y);
                 }
@@ -449,7 +821,149 @@ namespace BattleShips
             return false;
         }
 
-        private int checkArea(int x, int y)
+        private int checkArea1(int x, int y)
+        {
+            int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1, x - 1, y,
+                x - 1, y - 1, x, y - 1, x + 1, y - 1 };
+            int bufInt = 0;
+            for (int i = 0; i < 18; i++)
+            {
+                int bufX = sequenceParam[i];
+                ++i;
+                int bufY = sequenceParam[i];
+                bufInt += checkingContentArr1(bufX, bufY);
+            }
+            return bufInt;
+        }
+
+        private int checkingContentArr1(int x, int y)
+        {
+            if (x > 9 || x < 0 || y > 9 || y < 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return field1[x, y];
+            }
+        }
+
+        private void marking1(int cellValue, int mx, int my)
+        {
+            field1[mx, my] = cellValue;
+        }
+    }
+
+    partial class Fields_Creation
+    {
+        private int[,] field2;
+
+        public int[,] getField2()
+        {
+            return field2;
+        }
+        
+        private bool directionRIGHT_2(Ship_Design ship, int x, int y)
+        {
+            if (y + (ship.GetValueShip() - 1) > 9) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < ship.GetValueShip(); i++)
+            {
+                if (checkArea2(x, y + i) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == ship.GetValueShip())
+            {
+                for (int i = 0; i < ship.GetValueShip(); i++)
+                {
+                    marking2(ship.GetValueShip(), x, y + i);
+                    ship.SetCoordinates(x);
+                    ship.SetCoordinates(y + i);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private bool directionLEFT_2(Ship_Design ship, int x, int y)
+        {
+            if (y - (ship.GetValueShip() - 1) < 0) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < ship.GetValueShip(); i++)
+            {
+                if (checkArea2(x, y - i) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == ship.GetValueShip())
+            {
+                for (int i = 0; i < ship.GetValueShip(); i++)
+                {
+                    marking2(ship.GetValueShip(), x, y - i);
+                    ship.SetCoordinates(x);
+                    ship.SetCoordinates(y - i);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private bool directionUP_2(Ship_Design ship, int x, int y)
+        {
+            if (x - (ship.GetValueShip() - 1) < 0) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < ship.GetValueShip(); i++)
+            {
+                if (checkArea2(x - i, y) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == ship.GetValueShip())
+            {
+                for (int i = 0; i < ship.GetValueShip(); i++)
+                {
+                    marking2(ship.GetValueShip(), x - i, y);
+                    ship.SetCoordinates(x - i);
+                    ship.SetCoordinates(y);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private bool directionDOWN_2(Ship_Design ship, int x, int y)
+        {
+            if (x + (ship.GetValueShip() - 1) > 9) return false;
+            int sectionCount = 0;
+            for (int i = 0; i < ship.GetValueShip(); i++)
+            {
+                if (checkArea2(x + i, y) == 0)
+                {
+                    sectionCount++;
+                }
+            }
+
+            if (sectionCount == ship.GetValueShip())
+            {
+                for (int i = 0; i < ship.GetValueShip(); i++)
+                {
+                    marking2(ship.GetValueShip(), x + i, y);
+                    ship.SetCoordinates(x + i);
+                    ship.SetCoordinates(y);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private int checkArea2(int x, int y)
         {
             int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1, x - 1, y, x - 1, y - 1, x, y - 1, x + 1, y - 1 };
             int bufInt = 0;
@@ -458,12 +972,12 @@ namespace BattleShips
                 int bufX = sequenceParam[i];
                 ++i;
                 int bufY = sequenceParam[i];
-                bufInt += inArr(bufX, bufY);
+                bufInt += checkingContentArr2(bufX, bufY);
             }
             return bufInt;
         }
 
-        private int inArr(int x, int y)
+        private int checkingContentArr2(int x, int y)
         {
             if (x > 9 || x < 0 || y > 9 || y < 0)
             {
@@ -471,13 +985,66 @@ namespace BattleShips
             }
             else
             {
-                return field[x, y];
+                return field2[x, y];
             }
         }
 
-        private void marking(int cellValue, int mx, int my)
+        private void marking2(int cellValue, int mx, int my)
         {
-            field[mx, my] = cellValue;
+            field2[mx, my] = cellValue;
+        }
+    }
+
+    partial class Fields_Creation : All_Ships
+    {
+        public Fields_Creation()
+        {
+            createFields();
+            deployingOnFields();
+        }
+
+        private void createFields()
+        {
+            field1 = new int[10, 10];
+            field2 = new int[10, 10];
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    field1[i, j] = 0;
+                    field2[i, j] = 0;
+                }
+            }
+        }
+        
+        private void deployingOnFields()
+        {
+            Ship_Design[] ships1 = getAllShips1();
+            Ship_Design[] ships2 = getAllShips2();
+            foreach(Ship_Design ship in ships1)
+            {
+                for (int i = 0; i < 30; i++)
+                {
+                    int X = Program.rnd.Next(0, 10);
+                    int Y = Program.rnd.Next(0, 10);
+                    if (directionRIGHT_1(ship, X, Y) == true) break;
+                    if (directionLEFT_1(ship, X, X) == true) break;
+                    if (directionUP_1(ship, X, Y) == true) break;
+                    if (directionDOWN_1(ship, X, Y) == true) break;
+                }
+            }
+            foreach (Ship_Design ship in ships2)
+            {
+                for (int i = 0; i < 30; i++)
+                {
+                    int X = Program.rnd.Next(0, 10);
+                    int Y = Program.rnd.Next(0, 10);
+                    if (directionRIGHT_2(ship, X, Y) == true) break;
+                    if (directionLEFT_2(ship, X, X) == true) break;
+                    if (directionUP_2(ship, X, Y) == true) break;
+                    if (directionDOWN_2(ship, X, Y) == true) break;
+                }
+            }
         }
     }
 
@@ -485,7 +1052,7 @@ namespace BattleShips
     {
         private int valueDeck;
         private int buffer = 0;
-        private int hit = 0;
+        public int hit = 0;
         private int status = 0;
         protected int[] coordinates;
 
@@ -513,38 +1080,55 @@ namespace BattleShips
 
         public void setHit()
         {
-            hit++;
-            if (hit == valueDeck)
-                status++;
+            ++hit;
         }
 
         public int getCurrentStatus()
         {
+            if (hit == valueDeck)
+                return status = 1;
             return status;
         }
     }
 
     class All_Ships
     {
-        protected Ship_Design[] ships = new Ship_Design[10];
+        protected Ship_Design[] ships1 = new Ship_Design[10];
+        protected Ship_Design[] ships2 = new Ship_Design[10];
         
         public All_Ships()
         {
-            ships[0] = new Ship_Design(4);
-            ships[1] = new Ship_Design(3);
-            ships[2] = new Ship_Design(3);
-            ships[3] = new Ship_Design(2);
-            ships[4] = new Ship_Design(2);
-            ships[5] = new Ship_Design(2);
-            ships[6] = new Ship_Design(1);
-            ships[7] = new Ship_Design(1);
-            ships[8] = new Ship_Design(1);
-            ships[9] = new Ship_Design(1);
+            ships1[0] = new Ship_Design(4);
+            ships1[1] = new Ship_Design(3);
+            ships1[2] = new Ship_Design(3);
+            ships1[3] = new Ship_Design(2);
+            ships1[4] = new Ship_Design(2);
+            ships1[5] = new Ship_Design(2);
+            ships1[6] = new Ship_Design(1);
+            ships1[7] = new Ship_Design(1);
+            ships1[8] = new Ship_Design(1);
+            ships1[9] = new Ship_Design(1);
+
+            ships2[0] = new Ship_Design(4);
+            ships2[1] = new Ship_Design(3);
+            ships2[2] = new Ship_Design(3);
+            ships2[3] = new Ship_Design(2);
+            ships2[4] = new Ship_Design(2);
+            ships2[5] = new Ship_Design(2);
+            ships2[6] = new Ship_Design(1);
+            ships2[7] = new Ship_Design(1);
+            ships2[8] = new Ship_Design(1);
+            ships2[9] = new Ship_Design(1);
         }
 
-        protected Ship_Design[] getAllShips()
+        protected Ship_Design[] getAllShips1()
         {
-            return ships;
+            return ships1;
+        }
+
+        protected Ship_Design[] getAllShips2()
+        {
+            return ships2;
         }
     }
 }
