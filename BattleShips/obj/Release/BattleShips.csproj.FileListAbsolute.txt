@@ -1,0 +1,6 @@
+D:\VSJ\BattleShips\BattleShips\bin\Release\BattleShips.exe.config
+D:\VSJ\BattleShips\BattleShips\bin\Release\BattleShips.exe
+D:\VSJ\BattleShips\BattleShips\bin\Release\BattleShips.pdb
+D:\VSJ\BattleShips\BattleShips\obj\Release\BattleShips.csproj.CoreCompileInputs.cache
+D:\VSJ\BattleShips\BattleShips\obj\Release\BattleShips.exe
+D:\VSJ\BattleShips\BattleShips\obj\Release\BattleShips.pdb

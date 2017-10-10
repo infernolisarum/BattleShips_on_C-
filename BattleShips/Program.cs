@@ -105,7 +105,7 @@ namespace BattleShips
 
         private void enShot()
         {
-            if (status == 0)
+            if (status < 1)
             {
                 globalX = Program.rnd.Next(0, 10);
                 globalY = Program.rnd.Next(0, 10);
@@ -155,6 +155,7 @@ namespace BattleShips
             }
             else if(val == 2)
             {
+                drawZoneDestruct(val, x, y);
                 if (x - 1 >= 0 && myMap[x - 1, y] == 2)
                 {
                     myBF[x, y] = 'X';
@@ -204,467 +205,180 @@ namespace BattleShips
             }
             else if(val == 3)
             {
+                drawZoneDestruct(val, x, y);
+                status++;
+                myBF[x, y] = 'X';
+                myHit++;
+                Console.Beep();
+
                 if (x - 1 < 0 && myMap[x + 1, y] == 3)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x + status;
                     globalY = y;
                 }
+                else if (x - 1 >= 0 && myMap[x - 1, y] == 3 && myBF[x - 1, y] != 'X')
+                {
+                    globalX = x - 1;
+                    globalY = y;
+                }
+                else if (x - 1 >= 0 && myMap[x - 1, y] != 3 && x + 1 < 10 && myMap[x + 1, y] == 3)
+                {
+                    globalX = x + status;
+                    globalY = y;
+                }
+
                 else if (x + 1 > 9 && myMap[x - 1, y] == 3)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x - status;
                     globalY = y;
                 }
-                else if (y - 1 < 0 && myMap[x, y + 1] == 3)
+                else if (x + 1 < 10 && myMap[x + 1, y] == 3 && myBF[x + 1, y] != 'X')
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y + status;
-                }
-                else if (y + 1 > 9 && myMap[x, y - 1] == 3)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y - status;
-                }
-
-                else if (x - 1 >= 0 && myMap[x - 1, y] != 3 && x + 1 < 10 && myMap[x + 1, y] == 3)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x + status;
+                    globalX = x + 1;
                     globalY = y;
                 }
                 else if (x + 1 < 10 && myMap[x + 1, y] != 3 && x - 1 >= 0 && myMap[x - 1, y] == 3)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x - status;
                     globalY = y;
+                }
+
+                else if (y - 1 < 0 && myMap[x, y + 1] == 3)
+                {
+                    globalX = x;
+                    globalY = y + status;
+                }
+                else if (y - 1 >= 0 && myMap[x, y - 1] == 3 && myBF[x, y - 1] != 'X')
+                {
+                    globalX = x;
+                    globalY = y - 1;
                 }
                 else if (y - 1 >= 0 && myMap[x, y - 1] != 3 && y + 1 < 10 && myMap[x, y + 1] == 3)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x;
                     globalY = y + status;
+                }
+
+                else if (y + 1 > 9 && myMap[x, y - 1] == 3)
+                {
+                    globalX = x;
+                    globalY = y - status;
+                }
+                else if (y + 1 < 10 && myMap[x, y + 1] == 3 && myBF[x, y + 1] != 'X')
+                {
+                    globalX = x;
+                    globalY = y + 1;
                 }
                 else if (y + 1 < 10 && myMap[x, y + 1] != 3 && y - 1 >= 0 && myMap[x, y - 1] == 3)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x;
                     globalY = y - status;
                 }
 
-                else if (x - 1 >= 0 && y - 1 < 0 || y + 1 > 9)
+                if (status == 3)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x - 1;
-                    globalY = y;
+                    status = 0;
+                    return;
                 }
-                else if (x + 1 < 10 && y - 1 < 0 || y + 1 > 9)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x + 1;
-                    globalY = y;
-                }
-                else if (y - 1 >= 0 && x - 1 < 0 || x + 1 > 9)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y - 1;
-                }
-                else if (y + 1 < 10 && x - 1 < 0 || x + 1 > 9)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y + 1;
-                }
-
-                else if (x - 1 >= 0 && myMap[x, y - 1] != 3 && myMap[x, y + 1] != 3)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x - 1;
-                    globalY = y;
-                }
-                else if (x + 1 < 10 && myMap[x, y - 1] != 3 && myMap[x, y + 1] != 3)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x + 1;
-                    globalY = y;
-                }
-                else if (y - 1 >= 0 && myBF[x, y - 1] != 'X' && myMap[x + 1, y] != 3 && myMap[x - 1, y] != 3)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y - 1;
-                }
-                else if (y + 1 < 10 && myBF[x, y + 1] != 'X' && myMap[x + 1, y] != 3 && myMap[x - 1, y] != 3)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 3)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y + 1;
-                }
-
-                else status = 0;
             }
             else if (val == 4)
             {
+                drawZoneDestruct(val, x, y);
+                status++;
+                myBF[x, y] = 'X';
+                myHit++;
+                Console.Beep();
+
                 if (x - 1 < 0 && myMap[x + 1, y] == 4)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x + status;
                     globalY = y;
                 }
+                else if (x - 1 >= 0 && myMap[x - 1, y] == 4 && myBF[x - 1, y] != 'X')
+                {
+                    globalX = x - 1;
+                    globalY = y;
+                }
+                else if (x - 1 >= 0 && myMap[x - 1, y] != 4 && x + 1 < 10 && myMap[x + 1, y] == 4)
+                {
+                    globalX = x + status;
+                    globalY = y;
+                }
+
                 else if (x + 1 > 9 && myMap[x - 1, y] == 4)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x - status;
                     globalY = y;
                 }
-                else if (y - 1 < 0 && myMap[x, y + 1] == 4)
+                else if (x + 1 < 10 && myMap[x + 1, y] == 4 && myBF[x + 1, y] != 'X')
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y + status;
-                }
-                else if (y + 1 > 9 && myMap[x, y - 1] == 4)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y - status;
-                }
-
-                else if (x - 1 >= 0 && myMap[x - 1, y] != 4 && x + 1 < 10 && myMap[x + 1, y] == 4)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x + status;
+                    globalX = x + 1;
                     globalY = y;
                 }
                 else if (x + 1 < 10 && myMap[x + 1, y] != 4 && x - 1 >= 0 && myMap[x - 1, y] == 4)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x - status;
                     globalY = y;
                 }
-                else if (y - 1 >= 0 && myMap[x, y - 1] != 4 && y + 1 < 10 && myMap[x, y + 1] == 4)
+
+                else if (y - 1 < 0 && myMap[x, y + 1] == 4)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x;
                     globalY = y + status;
                 }
+                else if (y - 1 >= 0 && myMap[x, y - 1] == 4 && myBF[x, y - 1] != 'X')
+                {
+                    globalX = x;
+                    globalY = y - 1;
+                }
+                else if (y - 1 >= 0 && myMap[x, y - 1] != 4 && y + 1 < 10 && myMap[x, y + 1] == 4)
+                {
+                    globalX = x;
+                    globalY = y + status;
+                }
+
+                else if (y + 1 > 9 && myMap[x, y - 1] == 4)
+                {
+                    globalX = x;
+                    globalY = y - status;
+                }
+                else if (y + 1 < 10 && myMap[x, y + 1] == 4 && myBF[x, y + 1] != 'X')
+                {
+                    globalX = x;
+                    globalY = y + 1;
+                }
                 else if (y + 1 < 10 && myMap[x, y + 1] != 4 && y - 1 >= 0 && myMap[x, y - 1] == 4)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
                     globalX = x;
                     globalY = y - status;
                 }
 
-                else if (x - 1 >= 0 && y - 1 < 0 || y + 1 > 9)
+                if (status == 4)
                 {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x - 1;
-                    globalY = y;
+                    status = 0;
+                    return;
                 }
-                else if (x + 1 < 10 && y - 1 < 0 || y + 1 > 9)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x + 1;
-                    globalY = y;
-                }
-                else if (y - 1 >= 0 && x - 1 < 0 || x + 1 > 9)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y - 1;
-                }
-                else if (y + 1 < 10 && x - 1 < 0 || x + 1 > 9)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y + 1;
-                }
+            }
+        }
 
-                else if (x - 1 >= 0 && myMap[x, y - 1] != 4 && myMap[x, y + 1] != 4)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x - 1;
-                    globalY = y;
-                }
-                else if (x + 1 < 10 && myMap[x, y - 1] != 4 && myMap[x, y + 1] != 4)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x + 1;
-                    globalY = y;
-                }
-                else if (y - 1 >= 0 && myBF[x, y - 1] != 'X' && myMap[x + 1, y] != 4 && myMap[x - 1, y] != 4)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y - 1;
-                }
-                else if (y + 1 < 10 && myBF[x, y + 1] != 'X' && myMap[x + 1, y] != 4 && myMap[x - 1, y] != 4)
-                {
-                    status++;
-                    myBF[x, y] = 'X';
-                    myHit++;
-                    Console.Beep();
-                    if (status == 4)
-                    {
-                        status = 0;
-                        return;
-                    }
-                    globalX = x;
-                    globalY = y + 1;
-                }
+        private void drawZoneDestruct(int n, int x, int y)
+        {
+            int[] zoneDestruct = new int[] { x + 1, y, x + 1, y + 1, x, y + 1,
+                x - 1, y + 1, x - 1, y, x - 1, y - 1, x, y - 1, x + 1, y - 1 };
 
-                else status = 0;
+            for(int i = 0; i < 16; i++)
+            {
+                int bufX = zoneDestruct[i];
+                ++i;
+                int bufY = zoneDestruct[i];
+                if (bufX < 0 || bufX > 9 || bufY < 0 || bufY > 9)
+                {
+                    
+                }
+                else if (myMap[bufX, bufY] != n)
+                {
+                    myBF[bufX, bufY] = '#';
+                }
             }
         }
 
@@ -686,8 +400,9 @@ namespace BattleShips
                     }
                     Console.WriteLine();
                 }
-                Console.WriteLine(enHit);
-                Console.WriteLine(myHit);
+                Console.Write(20 - myHit);
+                Console.Write("\t\t\t");
+                Console.WriteLine(20 - enHit);
                 myInterface();
                 if (enHit == 20)
                 {
@@ -965,7 +680,8 @@ namespace BattleShips
 
         private int checkArea2(int x, int y)
         {
-            int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1, x - 1, y, x - 1, y - 1, x, y - 1, x + 1, y - 1 };
+            int[] sequenceParam = new int[] { x, y, x + 1, y, x + 1, y + 1, x, y + 1, x - 1, y + 1,
+                x - 1, y, x - 1, y - 1, x, y - 1, x + 1, y - 1 };
             int bufInt = 0;
             for (int i = 0; i < 18; i++)
             {
